@@ -4,6 +4,7 @@ import me.arasple.mc.trchat.api.nms.NMS
 import me.arasple.mc.trchat.module.conf.file.Settings
 import me.arasple.mc.trchat.module.display.channel.Channel
 import me.arasple.mc.trchat.module.display.channel.PrivateChannel
+import me.arasple.mc.trchat.module.display.channel.RoomChannel
 import me.arasple.mc.trchat.util.color.CustomColor
 import me.arasple.mc.trchat.util.color.MessageColors
 import me.arasple.mc.trchat.util.data
@@ -41,6 +42,7 @@ class ChatSession(val player: Player) {
         fun join(string: String): Boolean {
             val id = Channel.channels.keys.firstOrNull { string.equals(it, ignoreCase = true) } ?: return false
             val channel = Channel.channels[id]!!
+            if (channel is RoomChannel || !channel.canJoin(player)) return false
             setChannel(channel)
             channel.listeners.add(player.name)
             channel.events.join(player)
@@ -72,7 +74,7 @@ class ChatSession(val player: Player) {
 
     fun setChannel(channel: Channel?) {
         this.channel = channel?.id
-        if (channel != null && channel !is PrivateChannel) {
+        if (channel != null && channel !is PrivateChannel && channel !is RoomChannel) {
             player.data.setChannel(channel)
         }
     }

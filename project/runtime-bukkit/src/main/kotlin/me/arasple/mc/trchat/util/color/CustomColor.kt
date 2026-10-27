@@ -23,10 +23,10 @@ class CustomColor(val type: ColorType, val color: String) {
         var message = if (chatColor) {
             MessageColors.replaceWithPermission(sender, msg)
         } else {
-            msg
+            MessageColors.stripColorCodes(msg)
         }
 
-        if (!msg.startsWith("§")) {
+        if (!message.startsWith("§")) {
             message = when (type) {
                 ColorType.NORMAL -> color + message
                 ColorType.SPECIAL -> (color + message).parseRainbow().parseGradients()

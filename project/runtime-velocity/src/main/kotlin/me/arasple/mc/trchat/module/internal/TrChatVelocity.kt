@@ -29,6 +29,7 @@ object TrChatVelocity : Plugin() {
 
     init {
         Language.releasePath = "plugins/trchat/lang/{1}"
+        Language.enableFileWatcher = true
     }
 
     override fun onLoad() {
@@ -39,6 +40,14 @@ object TrChatVelocity : Plugin() {
     }
 
     override fun onEnable() {
+        command("trchatv", permission = "trchatv.reload") {
+            literal("reload") {
+                execute<ProxyCommandSender> { sender, _, _ ->
+                    Language.reload()
+                    sender.sendLang("Plugin-Done")
+                }
+            }
+        }
         command("muteallservers", permission = "trchatv.muteallservers") {
             dynamic("state") {
                 suggest {

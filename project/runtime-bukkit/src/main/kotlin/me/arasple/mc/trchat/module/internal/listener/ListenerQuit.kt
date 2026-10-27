@@ -4,6 +4,7 @@ import me.arasple.mc.trchat.api.impl.BukkitProxyManager
 import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.ChatSession
 import me.arasple.mc.trchat.module.display.channel.Channel
+import me.arasple.mc.trchat.module.internal.command.main.CommandRoom
 import me.arasple.mc.trchat.module.internal.data.PlayerData
 import me.arasple.mc.trchat.util.Cooldowns
 import org.bukkit.event.player.PlayerQuitEvent
@@ -25,6 +26,7 @@ object ListenerQuit {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun onQuit(e: PlayerQuitEvent) {
         val player = e.player
+        CommandRoom.forget(player)
         val name = player.name
 
         Functions.commandController.get().values.forEach { it.baffle?.reset(name) }

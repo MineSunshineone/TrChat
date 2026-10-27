@@ -2,18 +2,18 @@ Plugin-Loading:
   - '&f'
   - '&7正在加载 &3Tr&bChat&7... &8{0}'
   - '&f'
-Plugin-Enabled: '&8[&3Tr&bChat&8] &b信息 &8| &3加载完毕. TrChat &av{0} &3现已启用, 敬请使用.'
-Plugin-Loaded-Functions: '&8[&3Tr&bChat&8] &b聊天 &8| &3成功载入 &b{0} &3个聊天功能... &8[{1} Ms]'
-Plugin-Loaded-Channels: '&8[&3Tr&bChat&8] &b聊天 &8| &3成功载入 &b{0} &3个聊天频道... &8[{1} Ms]'
-Plugin-Loaded-Filter-Local: '&8[&3Tr&bChat&8] &a过滤器 &8| &3已载入本地敏感词库总计 &b{0} &3个.'
-Plugin-Loaded-Filter-Cloud: '&8[&3Tr&bChat&8] &a过滤器 &8| &3成功从云端更新敏感词汇总计 &a{0} &3个. &8[{1} - {2}]'
-Plugin-Reloaded: '&8[&3Tr&bChat&8] &7监听到配置文件改动, 已自动载入相关配置等...'
-Plugin-Failed-Load-Filter-Cloud: '&8[&3Tr&bChat&8] &8无法从云端更新敏感词库......'
-Plugin-Proxy-Supported: '&8[&3Tr&bChat&8] &6已支持 &e{0} &6通讯.'
-Plugin-Proxy-None: '&8[&3Tr&bChat&8] &7当前无跨服支持.'
-Plugin-Dependency-Hooked: '&8[&3Tr&bChat&8] &6挂钩 &8| &7软依赖 &f{0} &7已兼容.'
-Plugin-Updater-Latest: '&8[&3Tr&bChat&8] &8你正在运行最新版的 TrChat.'
-Plugin-Updater-Dev: '&8[&3Tr&bChat&8] &7你正在运行开发版本的 TrChat, 请及时反馈漏洞!'
+Plugin-Enabled: '&f&lICT &a&l>> &r &b信息 &8| &3加载完毕. TrChat &av{0} &3现已启用, 敬请使用.'
+Plugin-Loaded-Functions: '&f&lICT &a&l>> &r &b聊天 &8| &3成功载入 &b{0} &3个聊天功能... &8[{1} Ms]'
+Plugin-Loaded-Channels: '&f&lICT &a&l>> &r &b聊天 &8| &3成功载入 &b{0} &3个聊天频道... &8[{1} Ms]'
+Plugin-Loaded-Filter-Local: '&f&lICT &a&l>> &r &a过滤器 &8| &3已载入本地敏感词库总计 &b{0} &3个.'
+Plugin-Loaded-Filter-Cloud: '&f&lICT &a&l>> &r &a过滤器 &8| &3成功从云端更新敏感词汇总计 &a{0} &3个. &8[{1} - {2}]'
+Plugin-Reloaded: '&f&lICT &a&l>> &r &7监听到配置文件改动, 已自动载入相关配置等...'
+Plugin-Failed-Load-Filter-Cloud: '&f&lICT &a&l>> &r &8无法从云端更新敏感词库......'
+Plugin-Proxy-Supported: '&f&lICT &a&l>> &r &6已支持 &e{0} &6通讯.'
+Plugin-Proxy-None: '&f&lICT &a&l>> &r &7当前无跨服支持.'
+Plugin-Dependency-Hooked: '&f&lICT &a&l>> &r &6挂钩 &8| &7软依赖 &f{0} &7已兼容.'
+Plugin-Updater-Latest: '&f&lICT &a&l>> &r &8你正在运行最新版的 TrChat.'
+Plugin-Updater-Dev: '&f&lICT &a&l>> &r &7你正在运行开发版本的 TrChat, 请及时反馈漏洞!'
 Plugin-Updater-Header:
   - ''
   - '&3--------------------------------------------------'
@@ -40,19 +40,19 @@ Plugin-Debug-Off:
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
     pitch: 0
-Plugin-Done: '&8[&3Tr&bChat&8] &f操作成功.'
-Plugin-Failed: '&8[&3Tr&bChat&8] &c操作失败.'
+Plugin-Done: '&f&lICT &a&l>> &r &f操作成功.'
+Plugin-Failed: '&f&lICT &a&l>> &r &c操作失败.'
 
-General-Too-Long: '&8[&3Tr&bChat&8] &7你的聊天内容过长. &8[&6{0}&8/&2{1}&8]'
-General-Too-Similar: '&8[&3Tr&bChat&8] &7你的两次聊天内容过于相似, 请勿复读.'
-General-Too-Frequent: '&8[&3Tr&bChat&8] &7你发送消息的频率过高, 请稍后再试.'
-General-Too-Duplicate: '&8[&3Tr&bChat&8] &7你发送的内容中存在连续重复的词组, 请勿刷屏.'
-General-No-Permission: '&8[&3Tr&bChat&8] &7你没有足够的权限执行此操作.'
-General-Muted: '&8[&3Tr&bChat&8] &c你被禁言了!解除时间: {0} 原因: {1}'
-General-Cancel-Muted: '&8[&3Tr&bChat&8] &a你的禁言已被解除.'
-General-Global-Muting: '&8[&3Tr&bChat&8] &c全员禁言中.'
+General-Too-Long: '&f&lICT &a&l>> &r &7你的聊天内容过长. &8[&6{0}&8/&2{1}&8]'
+General-Too-Similar: '&f&lICT &a&l>> &r &7你的两次聊天内容过于相似, 请勿复读.'
+General-Too-Frequent: '&f&lICT &a&l>> &r &7你发送消息的频率过高, 请稍后再试.'
+General-Too-Duplicate: '&f&lICT &a&l>> &r &7你发送的内容中存在连续重复的词组, 请勿刷屏.'
+General-No-Permission: '&f&lICT &a&l>> &r &7你没有足够的权限执行此操作.'
+General-Muted: '&f&lICT &a&l>> &r &c你被禁言了!解除时间: {0} 原因: {1}'
+General-Cancel-Muted: '&f&lICT &a&l>> &r &a你的禁言已被解除.'
+General-Global-Muting: '&f&lICT &a&l>> &r &c全员禁言中.'
 General-Expansions-Header:
-  - '&8[&3Tr&bChat&8] &7你必须安装 PAPI &f{0} &7拓展以聊天.'
+  - '&f&lICT &a&l>> &r &7你必须安装 PAPI &f{0} &7拓展以聊天.'
   - type: JSON
     text: '&7请在安装后 [&3&n点击重载] &7拓展'
     args:
@@ -110,8 +110,8 @@ Cooldowns-Image-Show:
 
 Command-Controller-Deny: '&c&l你不能使用该命令...'
 Command-Controller-Cooldown: '&c&l该命令冷却中...({0})'
-Command-Not-Player: '&8[&3Tr&bChat&8] &c你必须是一个玩家才能执行此操作.'
-Command-Player-Not-Exist: '&8[&3Tr&bChat&8] &7目标玩家未在线或不存在.'
+Command-Not-Player: '&f&lICT &a&l>> &r &c你必须是一个玩家才能执行此操作.'
+Command-Player-Not-Exist: '&f&lICT &a&l>> &r &7目标玩家未在线或不存在.'
 
 Function-Mention-Format:
   - type: json
@@ -200,12 +200,12 @@ Private-Message-Receive:
     volume: 1
     pitch: 2
 
-Channel-Proxy-Not-Enable: '&8[&3Tr&bChat&8] &7未启用跨服支持, 暂不支持喊话.'
+Channel-Proxy-Not-Enable: '&f&lICT &a&l>> &r &7未启用跨服支持, 暂不支持喊话.'
 Channel-Join:
   - type: actionbar
     text: '&a&l已加入到{0}频道聊天'
   - type: text
-    text: '&8[&3Tr&bChat&8] &3你已经加入到{0}频道'
+    text: '&f&lICT &a&l>> &r &3你已经加入到{0}频道'
   - type: sound
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
@@ -214,7 +214,7 @@ Channel-Quit:
   - type: actionbar
     text: '&3&l已离开{0}聊天频道'
   - type: text
-    text: '&8[&3Tr&bChat&8] &7你已离开{0}频道'
+    text: '&f&lICT &a&l>> &r &7你已离开{0}频道'
   - type: sound
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
@@ -233,9 +233,9 @@ Channel-Bad-Language:
     sound: 'ENTITY_ITEM_BREAK'
     volume: 1
     pitch: 0
-Channel-Not-Found: '&8[&3Tr&bChat&8] &7频道 &b{0} &7不存在.'
-Channel-Join-Other: '&8[&3Tr&bChat&8] &3你已将 &7{0} &3加入 &b{1} &3频道.'
-Channel-Quit-Other: '&8[&3Tr&bChat&8] &3你已将 &7{0} &3移出聊天频道.'
+Channel-Not-Found: '&f&lICT &a&l>> &r &7频道 &b{0} &7不存在.'
+Channel-Join-Other: '&f&lICT &a&l>> &r &3你已将 &7{0} &3加入 &b{1} &3频道.'
+Channel-Quit-Other: '&f&lICT &a&l>> &r &3你已将 &7{0} &3移出聊天频道.'
 Sign-Edit-No-Permission:
   - type: actionbar
     text: '&c你没有权限编辑告示牌'
@@ -258,12 +258,27 @@ Anvil-Edit-No-Permission:
     volume: 1
     pitch: 0
 
-Mute-Muted-Player: '&8[&3Tr&bChat&8] &7你已禁言 {0} {1}.原因: {2}'
-Mute-Cancel-Muted-Player: '&8[&3Tr&bChat&8] &7你已取消禁言 {0}.'
-Mute-Muted-All: '&8[&3Tr&bChat&8] &7全员禁言已开启.'
-Mute-Cancel-Muted-All: '&8[&3Tr&bChat&8] &7全员禁言已关闭.'
-Mute-Wrong-Format: '&8[&3Tr&bChat&8] &7{0} 不是正确的时间!'
+Mute-Muted-Player: '&f&lICT &a&l>> &r &7你已禁言 {0} {1}.原因: {2}'
+Mute-Cancel-Muted-Player: '&f&lICT &a&l>> &r &7你已取消禁言 {0}.'
+Mute-Muted-All: '&f&lICT &a&l>> &r &7全员禁言已开启.'
+Mute-Cancel-Muted-All: '&f&lICT &a&l>> &r &7全员禁言已关闭.'
+Mute-Wrong-Format: '&f&lICT &a&l>> &r &7{0} 不是正确的时间!'
 
-Ignore-Ignored-Player: '&8[&3Tr&bChat&8] &7你已屏蔽 &f{0} &7的聊天.'
-Ignore-Cancel-Player: '&8[&3Tr&bChat&8] &7你已取消屏蔽 &f{0} &7的聊天.'
-Ignore-List: '&8[&3Tr&bChat&8] &7你已屏蔽这些玩家的聊天: &f{0}.'
+Ignore-Ignored-Player: '&f&lICT &a&l>> &r &7你已屏蔽 &f{0} &7的聊天.'
+Ignore-Cancel-Player: '&f&lICT &a&l>> &r &7你已取消屏蔽 &f{0} &7的聊天.'
+Ignore-List: '&f&lICT &a&l>> &r &7你已屏蔽这些玩家的聊天: &f{0}.'
+Room-Help: '&f&lICT &a&l>> &r&d私密频道 &7/room create 创建，/room invite <玩家> 邀请，/room accept 接受，/room list 成员，/room leave 退出；/room 切回房间，/room chat <消息> 发言。'
+Room-Created: '&f&lICT &a&l>> &r&d已创建私密频道（最多 8 人），使用 /room invite <玩家> 跨服邀请。'
+Room-Already-Joined: '&f&lICT &a&l>> &r&c你已加入一个私密频道，请先 /room leave。'
+Room-Not-Joined: '&f&lICT &a&l>> &r&c你尚未加入私密频道。'
+Room-Player-Unavailable: '&f&lICT &a&l>> &r&c目标玩家不在线，或不能邀请自己。'
+Room-Player-Joined: '&f&lICT &a&l>> &r&c目标玩家已加入其他私密频道。'
+Room-Full: '&f&lICT &a&l>> &r&c私密频道已满，最多容纳 8 人（包含创建者）。'
+Room-Invitation: '&f&lICT &a&l>> &r&d{0} 邀请你加入私密频道。请在 60 秒内使用 /room accept 接受。'
+Room-Invited: '&f&lICT &a&l>> &r&a已邀请 {0} 加入私密频道。'
+Room-No-Invitation: '&f&lICT &a&l>> &r&c你没有有效的邀请，邀请可能已过期或房间已解散。'
+Room-Joined: '&f&lICT &a&l>> &r&d{0} 已加入私密频道。'
+Room-Left: '&f&lICT &a&l>> &r&d{0} 已退出私密频道。'
+Room-Members: '&f&lICT &a&l>> &r&d私密频道成员（最多 8 人）: &f{0}'
+Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&c私密房间目前支持 Velocity 跨服或单服模式。'
+Room-Synchronizing: '&f&lICT &a&l>> &r&7正在同步跨服房间，请稍后再发送聊天。'

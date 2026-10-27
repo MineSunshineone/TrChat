@@ -2,6 +2,7 @@ package me.arasple.mc.trchat.module.internal.listener
 
 import me.arasple.mc.trchat.api.impl.BukkitProxyManager
 import me.arasple.mc.trchat.module.display.channel.Channel
+import me.arasple.mc.trchat.module.internal.command.main.CommandRoom
 import me.arasple.mc.trchat.module.internal.service.Updater
 import me.arasple.mc.trchat.util.data
 import me.arasple.mc.trchat.util.session
@@ -26,6 +27,7 @@ object ListenerJoin {
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     fun onJoin(e: PlayerJoinEvent) {
         val player = e.player
+        CommandRoom.beginSync(player)
 
         submitAsync {
             player.data
@@ -34,6 +36,7 @@ object ListenerJoin {
 
         submit(delay = 20) {
             if (!player.isOnline) return@submit
+            CommandRoom.request(player, "sync")
             Channel.channels.values.filter { it.settings.alwaysListen }.forEach {
                 if (it.canListen(player)) {
                     it.listeners.add(player.name)

@@ -21,6 +21,7 @@ import taboolib.common.platform.function.console
 import taboolib.common.platform.function.pluginVersion
 import taboolib.module.chat.Components
 import taboolib.module.lang.sendLang
+import taboolib.module.lang.Language
 import taboolib.module.nms.MinecraftVersion
 import taboolib.module.nms.MinecraftVersion.versionId
 import taboolib.platform.Folia
@@ -48,6 +49,7 @@ object TrChatBukkit : Plugin() {
 
     @Awake(LifeCycle.CONST)
     internal fun onConst() {
+        Language.enableFileWatcher = true
         detectPaperEnv()
     }
 
@@ -87,6 +89,7 @@ object TrChatBukkit : Plugin() {
     }
 
     fun reload(notify: ProxyCommandSender) {
+        Language.reload()
         Settings.conf.reload()
         Functions.conf.reload()
         Filters.conf.reload()

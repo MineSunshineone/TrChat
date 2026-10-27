@@ -2,18 +2,18 @@ Plugin-Loading:
   - '&f'
   - '&7Loading &3Tr&bChat&7... &8{0}'
   - '&f'
-Plugin-Enabled: '&8[&3Tr&bChat&8] &bINFO &8| &3Loaded. TrChat &av{0} &3has been enabled.'
-Plugin-Loaded-Functions: '&8[&3Tr&bChat&8] &bCHAT &8| &3Loaded &b{0} &3chat functions... &8[{1} Ms]'
-Plugin-Loaded-Channels: '&8[&3Tr&bChat&8] &bCHAT &8| &3Loaded &b{0} &3chat channels... &8[{1} Ms]'
-Plugin-Loaded-Filter-Local: '&8[&3Tr&bChat&8] &aFILTER &8| &3Loaded local filter words &b{0} &3.'
-Plugin-Loaded-Filter-Cloud: '&8[&3Tr&bChat&8] &aFILTER &8| &3Loaded cloud filter words &a{0} &3. &8[{1} - {2}]'
-Plugin-Reloaded: '&8[&3Tr&bChat&8] &7Settings changed, reloaded...'
-Plugin-Failed-Load-Filter-Cloud: '&8[&3Tr&bChat&8] &8Unable to update filter thesaurus from the cloud...'
-Plugin-Proxy-Supported: '&8[&3Tr&bChat&8] &6Hooked &e{0} &6chat support.'
-Plugin-Proxy-None: '&8[&3Tr&bChat&8] &7No proxy support currently'
-Plugin-Dependency-Hooked: '&8[&3Tr&bChat&8] &6HOOK &8| &7Soft-Dependency &f{0} &7is hooked.'
-Plugin-Updater-Latest: '&8[&3Tr&bChat&8] &2You''re running the latest version of &3TrChat&a.'
-Plugin-Updater-Dev: '&8[&3Tr&bChat&8] &6You''re running the development version of &3TrChat&6'
+Plugin-Enabled: '&f&lICT &a&l>> &r &bINFO &8| &3Loaded. TrChat &av{0} &3has been enabled.'
+Plugin-Loaded-Functions: '&f&lICT &a&l>> &r &bCHAT &8| &3Loaded &b{0} &3chat functions... &8[{1} Ms]'
+Plugin-Loaded-Channels: '&f&lICT &a&l>> &r &bCHAT &8| &3Loaded &b{0} &3chat channels... &8[{1} Ms]'
+Plugin-Loaded-Filter-Local: '&f&lICT &a&l>> &r &aFILTER &8| &3Loaded local filter words &b{0} &3.'
+Plugin-Loaded-Filter-Cloud: '&f&lICT &a&l>> &r &aFILTER &8| &3Loaded cloud filter words &a{0} &3. &8[{1} - {2}]'
+Plugin-Reloaded: '&f&lICT &a&l>> &r &7Settings changed, reloaded...'
+Plugin-Failed-Load-Filter-Cloud: '&f&lICT &a&l>> &r &8Unable to update filter thesaurus from the cloud...'
+Plugin-Proxy-Supported: '&f&lICT &a&l>> &r &6Hooked &e{0} &6chat support.'
+Plugin-Proxy-None: '&f&lICT &a&l>> &r &7No proxy support currently'
+Plugin-Dependency-Hooked: '&f&lICT &a&l>> &r &6HOOK &8| &7Soft-Dependency &f{0} &7is hooked.'
+Plugin-Updater-Latest: '&f&lICT &a&l>> &r &2You''re running the latest version of &3TrChat&a.'
+Plugin-Updater-Dev: '&f&lICT &a&l>> &r &6You''re running the development version of &3TrChat&6'
 Plugin-Updater-Header:
   - ''
   - '&3--------------------------------------------------'
@@ -37,19 +37,19 @@ Plugin-Debug-Off:
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
     pitch: 0
-Plugin-Done: '&8[&3Tr&bChat&8] &fOperate successfully.'
-Plugin-Failed: '&8[&3Tr&bChat&8] &cOperation failure.'
+Plugin-Done: '&f&lICT &a&l>> &r &fOperate successfully.'
+Plugin-Failed: '&f&lICT &a&l>> &r &cOperation failure.'
 
-General-Too-Long: '&8[&3Tr&bChat&8] &7Message is too long. &8[&6{0}&8/&2{1}&8]'
-General-Too-Similar: '&8[&3Tr&bChat&8] &7Please do not repeat your message.'
-General-Too-Frequent: '&8[&3Tr&bChat&8] &7You are sending messages too frequently, please slow down.'
-General-Too-Duplicate: '&8[&3Tr&bChat&8] &7Your message contains consecutively repeated phrases, please do not spam.'
-General-No-Permission: '&8[&3Tr&bChat&8] &7You do not have enough permission to do this.'
-General-Muted: '&8[&3Tr&bChat&8] &cYou have been muted until {0}!Reason: {1}'
-General-Cancel-Muted: '&8[&3Tr&bChat&8] &aYou can speak now.'
-General-Global-Muting: '&8[&3Tr&bChat&8] &cAll members are being muted.'
+General-Too-Long: '&f&lICT &a&l>> &r &7Message is too long. &8[&6{0}&8/&2{1}&8]'
+General-Too-Similar: '&f&lICT &a&l>> &r &7Please do not repeat your message.'
+General-Too-Frequent: '&f&lICT &a&l>> &r &7You are sending messages too frequently, please slow down.'
+General-Too-Duplicate: '&f&lICT &a&l>> &r &7Your message contains consecutively repeated phrases, please do not spam.'
+General-No-Permission: '&f&lICT &a&l>> &r &7You do not have enough permission to do this.'
+General-Muted: '&f&lICT &a&l>> &r &cYou have been muted until {0}!Reason: {1}'
+General-Cancel-Muted: '&f&lICT &a&l>> &r &aYou can speak now.'
+General-Global-Muting: '&f&lICT &a&l>> &r &cAll members are being muted.'
 General-Expansions-Header:
-  - '&8[&3Tr&bChat&8] &7You have to install the &f{0} &7expansion for PlaceholderAPI to chat.'
+  - '&f&lICT &a&l>> &r &7You have to install the &f{0} &7expansion for PlaceholderAPI to chat.'
   - type: JSON
     text: '&7Also don''t forget to [&3&nreload]'
     args:
@@ -107,8 +107,8 @@ Cooldowns-Image-Show:
 
 Command-Controller-Deny: '&c&lYou can not use this command.'
 Command-Controller-Cooldown: '&c&lYou need to wait after &6{0} secs &7&lbefore using this command again.'
-Command-Not-Player: '&8[&3Tr&bChat&8] &cYou must be a player to do this.'
-Command-Player-Not-Exist: '&8[&3Tr&bChat&8] &7The target player is not online or does not exist.'
+Command-Not-Player: '&f&lICT &a&l>> &r &cYou must be a player to do this.'
+Command-Player-Not-Exist: '&f&lICT &a&l>> &r &7The target player is not online or does not exist.'
 
 Function-Mention-Format:
   - type: json
@@ -197,12 +197,12 @@ Private-Message-Receive:
     volume: 1
     pitch: 2
 
-Channel-Proxy-Not-Enable: '&8[&3Tr&bChat&8] &7Unable to connect &eBungeeCord &7or &eVelocity &7.'
+Channel-Proxy-Not-Enable: '&f&lICT &a&l>> &r &7Unable to connect &eBungeeCord &7or &eVelocity &7.'
 Channel-Join:
   - type: actionbar
     text: '&a&lJoined the {0} chat channel.'
   - type: text
-    text: '&8[&3Tr&bChat&8] &3You''ve been into the {0} chat channel'
+    text: '&f&lICT &a&l>> &r &3You''ve been into the {0} chat channel'
   - type: sound
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
@@ -211,7 +211,7 @@ Channel-Quit:
   - type: actionbar
     text: '&3&lLeft the {0} chat channel.'
   - type: text
-    text: '&8[&3Tr&bChat&8] &7You''ve left the {0} chat channel...'
+    text: '&f&lICT &a&l>> &r &7You''ve left the {0} chat channel...'
   - type: sound
     sound: 'BLOCK_ANVIL_LAND'
     volume: 1
@@ -230,9 +230,9 @@ Channel-Bad-Language:
     sound: 'ENTITY_ITEM_BREAK'
     volume: 1
     pitch: 0
-Channel-Not-Found: '&8[&3Tr&bChat&8] &7The channel &b{0} &7does not exist.'
-Channel-Join-Other: '&8[&3Tr&bChat&8] &3You have moved &7{0} &3to the &b{1} &3channel.'
-Channel-Quit-Other: '&8[&3Tr&bChat&8] &3You have removed &7{0} &3from the chat channel.'
+Channel-Not-Found: '&f&lICT &a&l>> &r &7The channel &b{0} &7does not exist.'
+Channel-Join-Other: '&f&lICT &a&l>> &r &3You have moved &7{0} &3to the &b{1} &3channel.'
+Channel-Quit-Other: '&f&lICT &a&l>> &r &3You have removed &7{0} &3from the chat channel.'
 Sign-Edit-No-Permission:
   - type: actionbar
     text: '&cYou do not have permission to edit the bulletin board.'
@@ -255,12 +255,27 @@ Anvil-Edit-No-Permission:
     volume: 1
     pitch: 0
 
-Mute-Muted-Player: '&8[&3Tr&bChat&8] &7You muted {0} for {1}.Reason: {2}'
-Mute-Cancel-Muted-Player: '&8[&3Tr&bChat&8] &7You cancelled muting {0}.'
-Mute-Muted-All: '&8[&3Tr&bChat&8] &7Global muted.'
-Mute-Cancel-Muted-All: '&8[&3Tr&bChat&8] &7Global mute canceled.'
-Mute-Wrong-Format: '&8[&3Tr&bChat&8] &7{0} is not a correct time!'
+Mute-Muted-Player: '&f&lICT &a&l>> &r &7You muted {0} for {1}.Reason: {2}'
+Mute-Cancel-Muted-Player: '&f&lICT &a&l>> &r &7You cancelled muting {0}.'
+Mute-Muted-All: '&f&lICT &a&l>> &r &7Global muted.'
+Mute-Cancel-Muted-All: '&f&lICT &a&l>> &r &7Global mute canceled.'
+Mute-Wrong-Format: '&f&lICT &a&l>> &r &7{0} is not a correct time!'
 
-Ignore-Ignored-Player: '&8[&3Tr&bChat&8] &7Ignored &f{0}''s &7messages.'
-Ignore-Cancel-Player: '&8[&3Tr&bChat&8] &7Restore receiving &f{0}''s &7messages.'
-Ignore-List: '&8[&3Tr&bChat&8] &7You hava ignored these players'' messages: &f{0}.'
+Ignore-Ignored-Player: '&f&lICT &a&l>> &r &7Ignored &f{0}''s &7messages.'
+Ignore-Cancel-Player: '&f&lICT &a&l>> &r &7Restore receiving &f{0}''s &7messages.'
+Ignore-List: '&f&lICT &a&l>> &r &7You hava ignored these players'' messages: &f{0}.'
+Room-Help: '&f&lICT &a&l>> &r&dPrivate rooms &7/room create, /room invite <player>, /room accept, /room list, /room leave; /room to resume, /room chat <message> to speak.'
+Room-Created: '&f&lICT &a&l>> &r&dCreated a private room (8 players maximum). Use /room invite <player> to invite across servers.'
+Room-Already-Joined: '&f&lICT &a&l>> &r&cYou already belong to a room. Use /room leave first.'
+Room-Not-Joined: '&f&lICT &a&l>> &r&cYou do not belong to a private room.'
+Room-Player-Unavailable: '&f&lICT &a&l>> &r&cThat player is offline, or you tried to invite yourself.'
+Room-Player-Joined: '&f&lICT &a&l>> &r&cThat player already belongs to a private room.'
+Room-Full: '&f&lICT &a&l>> &r&cThe room is full (8 players including its creator).'
+Room-Invitation: '&f&lICT &a&l>> &r&d{0} invited you to a private room. Use /room accept within 60 seconds.'
+Room-Invited: '&f&lICT &a&l>> &r&aInvited {0} to the private room.'
+Room-No-Invitation: '&f&lICT &a&l>> &r&cYou have no valid invitation. It may have expired or the room was closed.'
+Room-Joined: '&f&lICT &a&l>> &r&d{0} joined the private room.'
+Room-Left: '&f&lICT &a&l>> &r&d{0} left the private room.'
+Room-Members: '&f&lICT &a&l>> &r&dPrivate room members (maximum 8): &f{0}'
+Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&cPrivate rooms currently support Velocity or standalone servers.'
+Room-Synchronizing: '&f&lICT &a&l>> &r&7Synchronizing your private room. Please wait before chatting.'

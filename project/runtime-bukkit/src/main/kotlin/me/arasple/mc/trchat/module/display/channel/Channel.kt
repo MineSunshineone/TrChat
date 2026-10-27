@@ -45,6 +45,8 @@ open class Channel(
 
     val listeners: MutableSet<String> = mutableSetOf()
 
+    open fun canJoin(player: Player): Boolean = player.passPermission(settings.joinPermission)
+
     open fun init() {
         registerCommand()
         onlinePlayers.filter { it.session.channel == id }.forEach {
@@ -134,7 +136,7 @@ open class Channel(
     }
 
     open fun execute(player: Player, message: String, toConsole: Boolean = true): ChannelExecuteResult {
-        return execute(player, Components.text(message), toConsole)
+        return execute(player, Components.text(message, color = false), toConsole)
     }
 
     open fun execute(player: Player, message: ComponentText, toConsole: Boolean = true): ChannelExecuteResult {
@@ -194,6 +196,11 @@ open class Channel(
             return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.LIMITED)
         }
 
+        broadcast(player, component, plain, toConsole, mentioned)
+        return ChannelExecuteResult.success(component)
+    }
+
+    open fun broadcast(player: Player, component: ComponentText, plain: String, toConsole: Boolean, mentioned: Set<String>) {
         // Proxy
         if (settings.proxy) {
             if (BukkitProxyManager.processor != null || settings.forceProxy) {
@@ -207,7 +214,7 @@ open class Channel(
                     senderName = player.name,
                     mentioned = mentioned.joinToString(",")
                 )
-                return ChannelExecuteResult.success(component)
+                return
             }
         }
         // Local
@@ -248,7 +255,6 @@ open class Channel(
         if (toConsole) {
             console().sendComponent(player, component)
         }
-        return ChannelExecuteResult.success(component)
     }
 
     /** 只有真正收到（能看到）该消息且被 @ 的玩家才会收到提示 */
@@ -362,7 +368,7 @@ open class Channel(
         }
 
         fun join(player: Player, channel: Channel, hint: Boolean = true): Boolean {
-            if (!player.passPermission(channel.settings.joinPermission)) {
+            if (!channel.canJoin(player)) {
                 if (hint) {
                     player.sendLang("General-No-Permission")
                 }

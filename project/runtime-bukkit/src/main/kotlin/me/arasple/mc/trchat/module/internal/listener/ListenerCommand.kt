@@ -1,9 +1,12 @@
 package me.arasple.mc.trchat.module.internal.listener
 
 import me.arasple.mc.trchat.module.conf.file.Functions
+import me.arasple.mc.trchat.module.display.channel.Channel
+import me.arasple.mc.trchat.module.display.channel.PrivateChannel
 import me.arasple.mc.trchat.util.toCondition
 import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.server.ServerCommandEvent
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.event.EventPriority
@@ -11,6 +14,7 @@ import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.util.replaceWithOrder
 import taboolib.common.util.subList
 import taboolib.platform.util.sendLang
+import taboolib.platform.util.bukkitPlugin
 
 /**
  * @author ItsFlicker
@@ -18,6 +22,25 @@ import taboolib.platform.util.sendLang
  */
 @PlatformSide(Platform.BUKKIT)
 object ListenerCommand {
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun onPrivateCommand(e: PlayerCommandPreprocessEvent) {
+        e.message = redirectPrivateCommand(e.message, bukkitPlugin.name.lowercase())
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun onPrivateConsoleCommand(e: ServerCommandEvent) {
+        e.command = redirectPrivateCommand("/${e.command}", bukkitPlugin.name.lowercase()).removePrefix("/")
+    }
+
+    internal fun redirectPrivateCommand(message: String, namespace: String): String {
+        val label = message.removePrefix("/").substringBefore(' ')
+        val channel = Channel.channels.values.filterIsInstance<PrivateChannel>().firstOrNull { channel ->
+            channel.bindings.command?.any { it.equals(label, ignoreCase = true) } == true
+        } ?: return message
+        // Resolve configured private aliases through TrChat even if another command owns /tell.
+        return "/$namespace:${channel.bindings.command!!.first()}" + message.substring(label.length + 1)
+    }
 
     @SubscribeEvent(priority = EventPriority.LOWEST, ignoreCancelled = true)
     fun onCommand(e: PlayerCommandPreprocessEvent) {

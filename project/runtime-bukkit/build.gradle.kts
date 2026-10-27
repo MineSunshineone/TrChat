@@ -14,6 +14,16 @@ dependencies {
 
     compileOnly("me.clip:placeholderapi:2.12.2") { isTransitive = false }
     compileOnly("com.discordsrv:discordsrv:1.26.0") { isTransitive = false }
+    testRuntimeOnly("net.kyori:adventure-text-minimessage:4.26.1")
 }
 
 taboolib { subproject = true }
+
+configurations.testImplementation { extendsFrom(configurations.compileOnly.get()) }
+
+val chatCheck by tasks.registering(JavaExec::class) {
+    dependsOn(tasks.testClasses)
+    classpath = sourceSets["test"].runtimeClasspath
+    mainClass.set("me.arasple.mc.trchat.ChatCheckKt")
+}
+tasks.check { dependsOn(chatCheck) }

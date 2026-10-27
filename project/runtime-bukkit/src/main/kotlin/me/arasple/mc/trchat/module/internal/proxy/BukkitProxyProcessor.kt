@@ -7,6 +7,7 @@ import me.arasple.mc.trchat.module.display.function.standard.InventoryShow
 import me.arasple.mc.trchat.module.display.function.standard.ItemShow
 import me.arasple.mc.trchat.module.internal.TrChatBukkit
 import me.arasple.mc.trchat.module.internal.command.main.CommandReply
+import me.arasple.mc.trchat.module.internal.command.main.CommandRoom
 import me.arasple.mc.trchat.module.internal.proxy.redis.RedisManager
 import me.arasple.mc.trchat.module.internal.proxy.redis.TrRedisMessage
 import me.arasple.mc.trchat.util.print
@@ -59,6 +60,7 @@ sealed interface BukkitProxyProcessor : PluginMessageListener {
 
     fun execute(data: Array<String>) {
         when (data[0]) {
+            "RoomState", "RoomMessage" -> CommandRoom.receive(data)
             "ForwardMessage" -> {
                 execute(data.drop(1).toTypedArray())
             }

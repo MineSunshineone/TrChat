@@ -4,6 +4,7 @@ import me.arasple.mc.trchat.api.event.TrChatReloadEvent
 import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.channel.Channel
 import me.arasple.mc.trchat.module.display.channel.PrivateChannel
+import me.arasple.mc.trchat.module.display.channel.RoomChannel
 import me.arasple.mc.trchat.module.display.channel.obj.ChannelBindings
 import me.arasple.mc.trchat.module.display.channel.obj.ChannelEvents
 import me.arasple.mc.trchat.module.display.channel.obj.ChannelRange
@@ -60,6 +61,7 @@ object Loader {
             newFile(File(getDataFolder(), "data"), folder = true)
         }
 
+        releaseResourceFile("channels/Room.yml")
         folder
     }
 
@@ -103,23 +105,24 @@ object Loader {
         }
 
         val settings = conf.getConfigurationSection("Options")!!.let { section ->
+            val isRoom = section.getBoolean("Room", false)
             val joinPermission = section.getString("Join-Permission", "")!!
             val listenPermission = section.getString("Listen-Permission", joinPermission)!!
             val speakCondition = section.getString("Speak-Condition").toCondition()
-            val alwaysListen = section.getBoolean("Always-Listen", section.getBoolean("Auto-Join", true))
-            val isPrivate = section.getBoolean("Private", false)
+            val alwaysListen = !isRoom && section.getBoolean("Always-Listen", section.getBoolean("Auto-Join", true))
+            val isPrivate = isRoom || section.getBoolean("Private", false)
             val range = section.getString("Target", "ALL")!!.uppercase().split(";").let {
                 val distance = it.getOrNull(1)?.toInt() ?: -1
                 ChannelRange(ChannelRange.Type.valueOf(it[0]), distance)
             }
-            val proxy = section.getBoolean("Proxy", false)
+            val proxy = !isRoom && section.getBoolean("Proxy", false)
             val forceProxy = section.getBoolean("Force-Proxy", false)
             val doubleTransfer = section.getBoolean("Double-Transfer", true)
             val ports = section.getString("Ports")?.split(";")?.map { it.toInt() } ?: emptyList()
             val disabledFunctions = section.getStringList("Disabled-Functions")
             val filterBeforeSending = section.getBoolean("Filter-Before-Sending", false)
-            val sendToDiscord = section.getBoolean("Send-To-Discord", !isPrivate)
-            val receiveFromDiscord = section.getBoolean("Receive-From-Discord", true)
+            val sendToDiscord = !isRoom && section.getBoolean("Send-To-Discord", !isPrivate)
+            val receiveFromDiscord = !isRoom && section.getBoolean("Receive-From-Discord", true)
             val discordChannel = section.getString("Discord-Channel", "")!!
             ChannelSettings(
                 joinPermission, listenPermission, speakCondition, alwaysListen, isPrivate,
@@ -142,7 +145,7 @@ object Loader {
             ChannelEvents(Reaction(process), Reaction(send), Reaction(join), Reaction(quit))
         } ?: ChannelEvents(null, null, null, null)
 
-        if (settings.isPrivate) {
+        if (settings.isPrivate && !conf.getBoolean("Options.Room")) {
             val sender = conf.getMapList("Sender").map { map ->
                 val condition = map["condition"]?.toString()?.toCondition()
                 val priority = Coerce.asInteger(map["priority"]).orNull() ?: 100
@@ -182,7 +185,11 @@ object Loader {
                 val suffix = parseGroups(map["suffix"] as? LinkedHashMap<*, *>)
                 Format(null, 100, prefix, msg, suffix)
             }
-            return Channel(id, settings, bindings, events, formats, console).also { it.init() }
+            return if (conf.getBoolean("Options.Room")) {
+                RoomChannel(id, settings, events, formats).also { it.init() }
+            } else {
+                Channel(id, settings, bindings, events, formats, console).also { it.init() }
+            }
         }
     }
 

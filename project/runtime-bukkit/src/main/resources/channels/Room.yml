@@ -1,0 +1,14 @@
+# Invitation-only rooms: /room create, invite <player>, accept, list, leave.
+# Velocity keeps membership across backend switches. Maximum eight players per room.
+Options:
+  Room: true
+  Always-Listen: false
+  Send-To-Discord: false
+  Receive-From-Discord: false
+
+Formats:
+  - prefix:
+      room:
+        text: '&8[&d私密频道&8] &f%player_name%&7: '
+    msg:
+      default-color: '&f'

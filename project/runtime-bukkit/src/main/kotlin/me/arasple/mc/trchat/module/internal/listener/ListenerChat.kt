@@ -6,6 +6,7 @@ import io.papermc.paper.event.player.AsyncChatEvent
 import me.arasple.mc.trchat.module.adventure.toNative
 import me.arasple.mc.trchat.module.display.channel.Channel
 import me.arasple.mc.trchat.module.internal.TrChatBukkit
+import me.arasple.mc.trchat.module.internal.command.main.CommandRoom
 import me.arasple.mc.trchat.util.session
 import org.bukkit.entity.Player
 import org.bukkit.event.player.AsyncPlayerChatEvent
@@ -16,6 +17,7 @@ import taboolib.common.platform.event.EventPriority
 import taboolib.common.platform.event.SubscribeEvent
 import taboolib.common.util.resettableLazy
 import taboolib.module.configuration.ConfigNode
+import taboolib.platform.util.sendLang
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -50,6 +52,12 @@ object ListenerChat {
     fun onPaperChat(e: AsyncChatEvent) {
         if (!TrChatBukkit.isPaperEnv) return
         if (isDisabledWorld(e.player)) return
+        if (CommandRoom.isSynchronizing(e.player.name)) {
+            e.isCancelled = true
+            cachePrefix.remove(e.player.uniqueId)
+            e.player.sendLang("Room-Synchronizing")
+            return
+        }
         if (cancelEvent) {
             e.isCancelled = true
         } else {
@@ -75,6 +83,12 @@ object ListenerChat {
     @SubscribeEvent(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onBukkitChat(e: AsyncPlayerChatEvent) {
         if (isDisabledWorld(e.player)) return
+        if (CommandRoom.isSynchronizing(e.player.name)) {
+            e.isCancelled = true
+            cachePrefix.remove(e.player.uniqueId)
+            e.player.sendLang("Room-Synchronizing")
+            return
+        }
         // 提前判定前缀
         if (TrChatBukkit.isPaperEnv) {
             Channel.channels.values.forEach { channel ->

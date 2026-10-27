@@ -9,6 +9,7 @@ import me.arasple.mc.trchat.api.impl.VelocityProxyManager
 import me.arasple.mc.trchat.module.internal.TrChatVelocity.plugin
 import me.arasple.mc.trchat.util.print
 import me.arasple.mc.trchat.util.proxy.common.MessageReader
+import me.arasple.mc.trchat.util.proxy.ChatRooms
 import me.arasple.mc.trchat.util.toUUID
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.identity.Identity
@@ -32,9 +33,24 @@ import java.io.IOException
 @PlatformSide(Platform.VELOCITY)
 object ListenerVelocityTransfer {
 
+    private val rooms = ChatRooms()
+
+    private fun roomRequest(data: Array<String>) {
+        rooms.execute(data) { plugin.server.getPlayer(it).isPresent }.forEach { response ->
+            plugin.server.getPlayer(response[1]).orElse(null)?.currentServer?.orElse(null)?.let {
+                VelocityProxyManager.sendMessage(it, *response)
+            }
+        }
+    }
+
     @SubscribeEvent
     fun onTransfer(e: PluginMessageEvent) {
+        if (e.identifier == VelocityProxyManager.outgoing) {
+            e.result = PluginMessageEvent.ForwardResult.handled()
+            return
+        }
         if (e.identifier != VelocityProxyManager.incoming) return
+        e.result = PluginMessageEvent.ForwardResult.handled()
         val source = e.source
         if (source !is ServerConnection) {
             warning("Received trchat:proxy message, but source is not ServerConnection")
@@ -58,6 +74,7 @@ object ListenerVelocityTransfer {
 
     @SubscribeEvent
     fun onProxyQuit(e: DisconnectEvent) {
+        roomRequest(arrayOf("RoomRequest", "disconnect", e.player.username))
         updateAllNamesLater()
     }
 
@@ -74,6 +91,13 @@ object ListenerVelocityTransfer {
 
     private fun execute(data: Array<String>, connection: ServerConnection) {
         when (data[0]) {
+            "RoomRequest" -> {
+                if (data.size != 5) return
+                val player = plugin.server.getPlayer(data[2]).orElse(null) ?: return
+                if (player.currentServer.orElse(null)?.server != connection.server) return
+                if (data[4] != player.uniqueId.toString()) return
+                roomRequest(data)
+            }
             "ForwardMessage" -> {
                 VelocityProxyManager.sendMessageToAll(*data)
             }
