@@ -10,6 +10,7 @@ import me.arasple.mc.trchat.module.internal.proxy.redis.RedisManager
 import me.arasple.mc.trchat.util.parseString
 import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.messaging.PluginMessageRecipient
 import org.spigotmc.SpigotConfig
 import taboolib.common.platform.Platform
@@ -24,6 +25,7 @@ import taboolib.module.chat.ComponentText
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.onlinePlayers
 import java.io.FileInputStream
+import java.io.File
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ExecutorService
@@ -65,6 +67,21 @@ object BukkitProxyManager : ClientMessageManager {
         Executors.newFixedThreadPool(8, factory)
     }
 
+    private val velocityEnabled by unsafeLazy {
+        kotlin.runCatching {
+            Bukkit.spigot().paperConfig.getBoolean("proxies.velocity.enabled", false) ||
+                Bukkit.spigot().paperConfig.getBoolean("settings.velocity-support.enabled", false)
+        }.getOrDefault(false) || File("config/paper-global.yml").let {
+            it.isFile && YamlConfiguration.loadConfiguration(it).getBoolean("proxies.velocity.enabled", false)
+        }
+    }
+
+    val roomMode: ProxyMode by unsafeLazy { mode.forRooms(velocityEnabled) }
+
+    private val roomProcessor by unsafeLazy {
+        if (roomMode == mode) processor else BukkitProxyProcessor.VelocitySide()
+    }
+
     override val mode: ProxyMode by unsafeLazy {
         val force = Settings.conf.getString("Options.Proxy")?.uppercase() ?: "AUTO"
         if (force != "AUTO") {
@@ -79,10 +96,7 @@ object BukkitProxyManager : ClientMessageManager {
         } else if (SpigotConfig.bungee) {
             console().sendLang("Plugin-Proxy-Supported", "Bungee")
             ProxyMode.BUNGEE
-        } else if (kotlin.runCatching {
-                Bukkit.spigot().paperConfig.getBoolean("proxies.velocity.enabled", false) ||
-                        Bukkit.spigot().paperConfig.getBoolean("settings.velocity-support.enabled", false)
-            }.getOrDefault(false)) {
+        } else if (velocityEnabled) {
             console().sendLang("Plugin-Proxy-Supported", "Velocity")
             ProxyMode.VELOCITY
         } else {
@@ -149,6 +163,10 @@ object BukkitProxyManager : ClientMessageManager {
     override fun sendMessage(recipient: Any?, data: Array<String>): Future<*> {
         if (processor == null || recipient !is PluginMessageRecipient) return CompletableFuture.completedFuture(false)
         return processor!!.sendMessage(recipient, executor, data)
+    }
+
+    fun sendRoomMessage(recipient: PluginMessageRecipient, data: Array<String>): Future<*> {
+        return roomProcessor?.sendMessage(recipient, executor, data) ?: CompletableFuture.completedFuture(false)
     }
 
 

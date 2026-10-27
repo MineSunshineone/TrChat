@@ -1,6 +1,7 @@
 package me.arasple.mc.trchat.module.internal.proxy
 
 import me.arasple.mc.trchat.api.impl.BukkitProxyManager
+import me.arasple.mc.trchat.api.ProxyMode
 import me.arasple.mc.trchat.module.display.channel.PrivateChannel
 import me.arasple.mc.trchat.module.display.function.standard.EnderChestShow
 import me.arasple.mc.trchat.module.display.function.standard.InventoryShow
@@ -37,6 +38,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+
+internal fun acceptsVelocityMessage(mode: ProxyMode, data: Array<String>): Boolean =
+    mode == ProxyMode.VELOCITY || data.firstOrNull() in listOf("RoomState", "RoomMessage") ||
+        (data.firstOrNull() == "SendLang" && data.getOrNull(2)?.startsWith("Room-") == true)
 
 /**
  * @author ItsFlicker
@@ -247,7 +252,9 @@ sealed interface BukkitProxyProcessor : PluginMessageListener {
                 try {
                     val data = MessageReader.read(message)
                     if (data.isCompleted) {
-                        execute(data.build())
+                        val packet = data.build()
+                        // Redis still owns normal chat and player lists when Velocity only carries rooms.
+                        if (acceptsVelocityMessage(BukkitProxyManager.mode, packet)) execute(packet)
                     }
                 } catch (e: IOException) {
                     e.print("Failed to read proxy trchat message!")

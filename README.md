@@ -12,6 +12,7 @@
 
 - `/room create` 创建邀请制私密房间；`/room invite <玩家>` 跨服邀请；`/room accept` 接受。
 - 每个房间最多 8 人（含创建者），邀请 60 秒有效；`/room list` 查看成员，`/room leave` 退出。
+- 同服与同一 Velocity 下多个子服的玩家可加入同一房间；普通聊天使用 Redis 时，房间仍通过 Velocity 同步。
 - `/room` 切回房间，`/room chat <消息>` 单次发言。切换普通频道保留成员身份，切服恢复房间，代理重启后解散。
 - 房间格式位于 `channels/Room.yml`，不会广播到公共频道或 Discord。默认权限 `trchat.private.room`。
 - 普通玩家可分别获得 `trchat.color.anvil.*`、`trchat.color.sign.*`、`trchat.color.book.*`；聊天颜色单独授权，管理员使用 `trchat.color.*`。

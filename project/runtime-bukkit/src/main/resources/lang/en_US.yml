@@ -277,5 +277,5 @@ Room-No-Invitation: '&f&lICT &a&l>> &r&cYou have no valid invitation. It may hav
 Room-Joined: '&f&lICT &a&l>> &r&d{0} joined the private room.'
 Room-Left: '&f&lICT &a&l>> &r&d{0} left the private room.'
 Room-Members: '&f&lICT &a&l>> &r&dPrivate room members (maximum 8): &f{0}'
-Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&cPrivate rooms currently support Velocity or standalone servers.'
+Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&cPrivate rooms are temporarily unavailable. Please try again later or contact an administrator.'
 Room-Synchronizing: '&f&lICT &a&l>> &r&7Synchronizing your private room. Please wait before chatting.'

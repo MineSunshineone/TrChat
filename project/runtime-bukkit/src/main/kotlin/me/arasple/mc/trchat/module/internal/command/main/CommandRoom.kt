@@ -37,7 +37,7 @@ object CommandRoom {
     fun isMember(name: String): Boolean = members.containsKey(name)
 
     fun beginSync(player: Player) {
-        if (channel() != null && BukkitProxyManager.mode == ProxyMode.VELOCITY) synchronizing += player.name
+        if (channel() != null && BukkitProxyManager.roomMode == ProxyMode.VELOCITY) synchronizing += player.name
     }
 
     fun isSynchronizing(name: String): Boolean = name in synchronizing
@@ -82,13 +82,13 @@ object CommandRoom {
     fun request(player: Player, action: String, argument: String = "") {
         if (channel() == null) return
         val data = arrayOf("RoomRequest", action, player.name, argument, player.uniqueId.toString())
-        if ((BukkitProxyManager.mode == ProxyMode.NONE || BukkitProxyManager.mode == ProxyMode.VELOCITY)
+        if ((BukkitProxyManager.roomMode == ProxyMode.NONE || BukkitProxyManager.roomMode == ProxyMode.VELOCITY)
             && (action == "create" || action == "accept" || action == "sync")) {
             synchronizing += player.name
         }
-        when (BukkitProxyManager.mode) {
+        when (BukkitProxyManager.roomMode) {
             ProxyMode.NONE -> localRooms.execute(data) { Bukkit.getPlayerExact(it)?.isOnline == true }.forEach { receive(it) }
-            ProxyMode.VELOCITY -> BukkitProxyManager.sendMessage(player, data)
+            ProxyMode.VELOCITY -> BukkitProxyManager.sendRoomMessage(player, data)
             else -> if (action != "sync") player.sendLang("Room-Unsupported-Proxy")
         }
     }
@@ -97,7 +97,7 @@ object CommandRoom {
         members.remove(player.name)
         revisions.remove(player.name)
         synchronizing.remove(player.name)
-        if (BukkitProxyManager.mode == ProxyMode.NONE) request(player, "disconnect")
+        if (BukkitProxyManager.roomMode == ProxyMode.NONE) request(player, "disconnect")
     }
 
     fun receive(data: Array<String>) {

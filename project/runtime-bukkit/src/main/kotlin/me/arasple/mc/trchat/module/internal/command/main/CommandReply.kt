@@ -12,6 +12,7 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.command.command
+import java.util.concurrent.ConcurrentHashMap
 import taboolib.module.lang.sendLang
 import taboolib.platform.util.sendLang
 
@@ -25,22 +26,22 @@ import taboolib.platform.util.sendLang
 @PlatformSide(Platform.BUKKIT)
 object CommandReply {
 
-    val lastMessageFrom = HashMap<String, String>()
+    val lastMessageFrom = ConcurrentHashMap<String, String>()
 
     @Awake(LifeCycle.ENABLE)
     fun register() {
         if (Settings.conf.getStringList("Options.Disabled-Commands").contains("reply")) return
-        command("reply", listOf("trreply", "r"), "Reply", permission = "trchat.private") {
+        // Register /r as the primary label so an Essentials alias cannot retain ownership.
+        command("r", listOf("reply", "trreply"), "Reply", permission = "trchat.private") {
             dynamic("message") {
                 execute<Player> { sender, _, argument ->
                     val session = sender.session
                     if (!sender.checkMute()) {
                         return@execute
                     }
-                    if (!lastMessageFrom.containsKey(sender.name)) {
-                        return@execute sender.sendLang("Command-Player-Not-Exist")
-                    }
-                    val to = BukkitProxyManager.getExactName(lastMessageFrom[sender.name]!!)
+                    val from = lastMessageFrom[sender.name]
+                        ?: return@execute sender.sendLang("Command-Player-Not-Exist")
+                    val to = BukkitProxyManager.getExactName(from)
                         ?: return@execute sender.sendLang("Command-Player-Not-Exist")
                     session.lastPrivateTo = to
                     Channel.channels.values

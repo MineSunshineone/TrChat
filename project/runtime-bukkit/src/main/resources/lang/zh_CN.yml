@@ -267,18 +267,32 @@ Mute-Wrong-Format: '&f&lICT &a&l>> &r &7{0} 不是正确的时间!'
 Ignore-Ignored-Player: '&f&lICT &a&l>> &r &7你已屏蔽 &f{0} &7的聊天.'
 Ignore-Cancel-Player: '&f&lICT &a&l>> &r &7你已取消屏蔽 &f{0} &7的聊天.'
 Ignore-List: '&f&lICT &a&l>> &r &7你已屏蔽这些玩家的聊天: &f{0}.'
-Room-Help: '&f&lICT &a&l>> &r&d私密频道 &7/room create 创建，/room invite <玩家> 邀请，/room accept 接受，/room list 成员，/room leave 退出；/room 切回房间，/room chat <消息> 发言。'
-Room-Created: '&f&lICT &a&l>> &r&d已创建私密频道（最多 8 人），使用 /room invite <玩家> 跨服邀请。'
-Room-Already-Joined: '&f&lICT &a&l>> &r&c你已加入一个私密频道，请先 /room leave。'
-Room-Not-Joined: '&f&lICT &a&l>> &r&c你尚未加入私密频道。'
-Room-Player-Unavailable: '&f&lICT &a&l>> &r&c目标玩家不在线，或不能邀请自己。'
-Room-Player-Joined: '&f&lICT &a&l>> &r&c目标玩家已加入其他私密频道。'
-Room-Full: '&f&lICT &a&l>> &r&c私密频道已满，最多容纳 8 人（包含创建者）。'
-Room-Invitation: '&f&lICT &a&l>> &r&d{0} 邀请你加入私密频道。请在 60 秒内使用 /room accept 接受。'
-Room-Invited: '&f&lICT &a&l>> &r&a已邀请 {0} 加入私密频道。'
-Room-No-Invitation: '&f&lICT &a&l>> &r&c你没有有效的邀请，邀请可能已过期或房间已解散。'
-Room-Joined: '&f&lICT &a&l>> &r&d{0} 已加入私密频道。'
-Room-Left: '&f&lICT &a&l>> &r&d{0} 已退出私密频道。'
-Room-Members: '&f&lICT &a&l>> &r&d私密频道成员（最多 8 人）: &f{0}'
-Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&c私密房间目前支持 Velocity 跨服或单服模式。'
-Room-Synchronizing: '&f&lICT &a&l>> &r&7正在同步跨服房间，请稍后再发送聊天。'
+Room-Help:
+  - type: text
+    text: '&f&lICT &a&l>> &r&d私密房间：同服、跨服都能加入，整个房间最多 8 人（含创建者）。'
+  - type: text
+    text: '&f&lICT &a&l>> &r&7创建：&f/room create &7；邀请好友：&f/room invite <玩家名>'
+  - type: text
+    text: '&f&lICT &a&l>> &r&7收到邀请后：&f/room accept &7（60 秒内接受）；查看成员：&f/room list'
+  - type: text
+    text: '&f&lICT &a&l>> &r&7返回房间聊天：&f/room &7；只向房间发一条：&f/room chat <消息>'
+  - type: text
+    text: '&f&lICT &a&l>> &r&7退出：&f/room leave &7；最后一人退出后，房间自动解散。'
+Room-Created:
+  - type: text
+    text: '&f&lICT &a&l>> &r&a已创建并进入私密房间（1/8 人）。现在直接聊天，消息只会发给房间成员。'
+  - type: text
+    text: '&f&lICT &a&l>> &r&7输入 &f/room invite <玩家名> &7邀请好友；同服、其他子服的在线好友都可以加入。'
+Room-Already-Joined: '&f&lICT &a&l>> &r&c你已经在一个房间里。输入 &f/room &c返回房间聊天；要换房间，请先 &f/room leave&c。'
+Room-Not-Joined: '&f&lICT &a&l>> &r&c你还没有加入房间。输入 &f/room create &c创建，或请好友邀请后输入 &f/room accept&c。'
+Room-Player-Unavailable: '&f&lICT &a&l>> &r&c邀请失败：对方不在线，或你填写了自己的名字。请确认好友的在线玩家名。'
+Room-Player-Joined: '&f&lICT &a&l>> &r&c邀请失败：对方已经加入房间，请让对方先输入 &f/room leave &c退出，再重新邀请。'
+Room-Full: '&f&lICT &a&l>> &r&c这个房间已有 8 人（含创建者）。同服、跨服共用这 8 个名额，请等有人退出后再试。'
+Room-Invitation: '&f&lICT &a&l>> &r&d{0} &7邀请你加入私密房间，同服、跨服都可以。请在 &f60 秒内 &7输入 &f/room accept &7加入。'
+Room-Invited: '&f&lICT &a&l>> &r&a已向 {0} 发出邀请，请让对方在 60 秒内输入 &f/room accept &a加入。'
+Room-No-Invitation: '&f&lICT &a&l>> &r&c当前没有可接受的邀请：可能尚未收到、已经过期，或房间已解散。请让好友重新邀请你。'
+Room-Joined: '&f&lICT &a&l>> &r&d{0} &7已加入房间。输入 &f/room &7返回房间聊天，&f/room list &7查看成员。'
+Room-Left: '&f&lICT &a&l>> &r&d{0} &7已离开房间。最后一人退出后，房间自动解散。'
+Room-Members: '&f&lICT &a&l>> &r&d房间成员（同服、跨服合计最多 8 人）：&f{0}'
+Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&c私密房间暂时不可用，请稍后再试或联系管理员。'
+Room-Synchronizing: '&f&lICT &a&l>> &r&7正在连接你的房间，请稍后再发送消息；若一直未恢复，请联系管理员。'

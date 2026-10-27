@@ -1,5 +1,7 @@
 package me.arasple.mc.trchat
 
+import me.arasple.mc.trchat.api.ProxyMode
+import me.arasple.mc.trchat.module.internal.proxy.acceptsVelocityMessage
 import me.arasple.mc.trchat.module.display.channel.Channel
 import me.arasple.mc.trchat.module.display.channel.PrivateChannel
 import me.arasple.mc.trchat.module.display.channel.obj.ChannelBindings
@@ -13,6 +15,23 @@ import org.bukkit.permissions.PermissionAttachmentInfo
 import java.lang.reflect.Proxy
 
 fun main() {
+    check(ProxyMode.REDIS.forRooms(true) == ProxyMode.VELOCITY)
+    check(ProxyMode.REDIS.forRooms(false) == ProxyMode.REDIS)
+    listOf(ProxyMode.NONE, ProxyMode.BUNGEE, ProxyMode.VELOCITY).forEach { mode ->
+        check(mode.forRooms(true) == mode)
+        check(mode.forRooms(false) == mode)
+    }
+    listOf("RoomState", "RoomMessage").forEach { type ->
+        check(acceptsVelocityMessage(ProxyMode.REDIS, arrayOf(type)))
+    }
+    check(acceptsVelocityMessage(ProxyMode.REDIS, arrayOf("SendLang", "owner", "Room-Created")))
+    listOf("UpdateAllNames", "BroadcastRaw", "SendPrivateRaw", "GlobalMute").forEach { type ->
+        check(!acceptsVelocityMessage(ProxyMode.REDIS, arrayOf(type)))
+        check(acceptsVelocityMessage(ProxyMode.VELOCITY, arrayOf(type)))
+    }
+    check(!acceptsVelocityMessage(ProxyMode.REDIS, emptyArray()))
+    check(!acceptsVelocityMessage(ProxyMode.REDIS, arrayOf("SendLang")))
+    check(!acceptsVelocityMessage(ProxyMode.REDIS, arrayOf("SendLang", "owner", "Other-Message")))
     val permissions = linkedMapOf(
         "trchat.color.c" to false,
         "trchat.color.b" to true,
@@ -73,5 +92,13 @@ fun main() {
     check(ListenerCommand.redirectPrivateCommand("/minecraft:tell Alex hello", "trchat") == "/minecraft:tell Alex hello")
     Channel.channels.clear()
     check(ListenerCommand.redirectPrivateCommand("/tell Alex hello", "trchat") == "/tell Alex hello")
+    listOf("r", "R", "reply", "trreply").forEach { alias ->
+        check(ListenerCommand.redirectPrivateCommand("/$alias hello  world", "trchat") == "/trchat:r hello  world")
+        check(ListenerCommand.redirectPrivateCommand("/$alias", "trchat") == "/trchat:r")
+        check(ListenerCommand.redirectPrivateCommand("/$alias hello", "trchat", false) == "/$alias hello")
+    }
+    check(ListenerCommand.redirectPrivateCommand("/r 你好 世界", "trchat") == "/trchat:r 你好 世界")
+    check(ListenerCommand.redirectPrivateCommand("/essentials:r hello", "trchat") == "/essentials:r hello")
+    check(ListenerCommand.redirectPrivateCommand("/trchat:r hello", "trchat") == "/trchat:r hello")
     println("Chat checks passed (denied colors, item/chat permission isolation, admin colors, raw section codes, default colors, private-command routing).")
 }

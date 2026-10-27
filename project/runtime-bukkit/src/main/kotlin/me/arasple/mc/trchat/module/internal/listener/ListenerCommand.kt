@@ -3,6 +3,7 @@ package me.arasple.mc.trchat.module.internal.listener
 import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.channel.Channel
 import me.arasple.mc.trchat.module.display.channel.PrivateChannel
+import me.arasple.mc.trchat.module.conf.file.Settings
 import me.arasple.mc.trchat.util.toCondition
 import org.bukkit.Bukkit
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
@@ -25,16 +26,21 @@ object ListenerCommand {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onPrivateCommand(e: PlayerCommandPreprocessEvent) {
-        e.message = redirectPrivateCommand(e.message, bukkitPlugin.name.lowercase())
+        e.message = redirectPrivateCommand(e.message, bukkitPlugin.name.lowercase(), replyEnabled())
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun onPrivateConsoleCommand(e: ServerCommandEvent) {
-        e.command = redirectPrivateCommand("/${e.command}", bukkitPlugin.name.lowercase()).removePrefix("/")
+        e.command = redirectPrivateCommand("/${e.command}", bukkitPlugin.name.lowercase(), replyEnabled()).removePrefix("/")
     }
 
-    internal fun redirectPrivateCommand(message: String, namespace: String): String {
+    private fun replyEnabled() = "reply" !in Settings.conf.getStringList("Options.Disabled-Commands")
+
+    internal fun redirectPrivateCommand(message: String, namespace: String, replyEnabled: Boolean = true): String {
         val label = message.removePrefix("/").substringBefore(' ')
+        if (replyEnabled && label.lowercase() in setOf("r", "reply", "trreply")) {
+            return "/$namespace:r" + message.substring(label.length + 1)
+        }
         val channel = Channel.channels.values.filterIsInstance<PrivateChannel>().firstOrNull { channel ->
             channel.bindings.command?.any { it.equals(label, ignoreCase = true) } == true
         } ?: return message

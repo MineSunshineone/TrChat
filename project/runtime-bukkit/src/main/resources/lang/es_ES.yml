@@ -279,5 +279,5 @@ Room-No-Invitation: '&f&lICT &a&l>> &r&cNo tienes una invitación válida. Puede
 Room-Joined: '&f&lICT &a&l>> &r&d{0} entró en la sala privada.'
 Room-Left: '&f&lICT &a&l>> &r&d{0} salió de la sala privada.'
 Room-Members: '&f&lICT &a&l>> &r&dMiembros de la sala (máximo 8): &f{0}'
-Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&cLas salas privadas requieren Velocity o un servidor independiente.'
+Room-Unsupported-Proxy: '&f&lICT &a&l>> &r&cLas salas privadas no estan disponibles. Intentalo mas tarde o contacta con un administrador.'
 Room-Synchronizing: '&f&lICT &a&l>> &r&7Sincronizando la sala privada. Espera antes de enviar mensajes.'
