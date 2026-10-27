@@ -77,6 +77,10 @@ object ItemShow : Function("ITEM") {
     @ConfigNode("General.Item-Show.Keys", "function.yml")
     var keys = emptyList<String>()
 
+    val keysRegex by resettableLazy("functions") {
+        keys.map { Regex("${Regex.escape(it)}-?([0-9])?", RegexOption.IGNORE_CASE) }
+    }
+
     private val cacheComponent: Cache<ItemStack, ComponentText> = CacheBuilder.newBuilder()
         .maximumSize(50)
         .build()
@@ -91,12 +95,14 @@ object ItemShow : Function("ITEM") {
             return message
         }
         var result = message
-        keys.forEach { key ->
-            (1..9).forEach {
-                result = result.replace("$key-$it", "{{ITEM:$it}}", ignoreCase = true)
-                result = result.replace("$key$it", "{{ITEM:$it}}", ignoreCase = true)
+        keysRegex.forEach { key ->
+            result = result.replace(key) {
+                var i = it.groupValues.getOrNull(1)
+                if (i.isNullOrBlank()) {
+                    i = (sender.inventory.heldItemSlot + 1).toString()
+                }
+                "{{ITEM:${push(i)}}}"
             }
-            result = result.replace(key, "{{ITEM:${sender.inventory.heldItemSlot + 1}}}", ignoreCase = true)
         }
         return result
     }
@@ -206,6 +212,7 @@ object ItemShow : Function("ITEM") {
     @Suppress("Deprecation")
     private fun ItemStack.getNameComponent(player: Player): ComponentText {
         if (!originName && itemMeta?.hasDisplayName() == true) {
+            // display_name
             if (isDragonCoreHooked) {
                 return Components.text(itemMeta!!.displayName, color = false)
             }
@@ -225,6 +232,7 @@ object ItemShow : Function("ITEM") {
             }
             return Components.text(itemMeta!!.itemName)
         } else {
+            // origin name
             if (MinecraftVersion.isHigherOrEqual(MinecraftVersion.V1_15)) {
                 val key = try {
                     if (Components.useAdventure) {

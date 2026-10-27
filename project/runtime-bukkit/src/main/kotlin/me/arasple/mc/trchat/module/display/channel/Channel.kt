@@ -2,12 +2,14 @@ package me.arasple.mc.trchat.module.display.channel
 
 import me.arasple.mc.trchat.TrChat
 import me.arasple.mc.trchat.api.event.TrChatEvent
+import me.arasple.mc.trchat.api.event.TrChatSendEvent
 import me.arasple.mc.trchat.api.impl.BukkitProxyManager
 import me.arasple.mc.trchat.module.conf.file.Settings
 import me.arasple.mc.trchat.module.display.channel.obj.*
 import me.arasple.mc.trchat.module.display.format.Format
 import me.arasple.mc.trchat.module.display.format.MsgComponent
 import me.arasple.mc.trchat.module.display.function.Function
+import me.arasple.mc.trchat.module.internal.TrChatBukkit
 import me.arasple.mc.trchat.module.internal.data.ChatLogs
 import me.arasple.mc.trchat.module.internal.service.Metrics
 import me.arasple.mc.trchat.util.*
@@ -18,7 +20,6 @@ import taboolib.common.platform.command.command
 import taboolib.common.platform.function.adaptPlayer
 import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getProxyPlayer
-import taboolib.common.platform.function.unregisterCommand
 import taboolib.common.util.Strings
 import taboolib.common.util.subList
 import taboolib.module.chat.ComponentText
@@ -40,6 +41,8 @@ open class Channel(
     val consoleFormat: List<Format>
 ) {
 
+    var isUnregistered = false
+
     val listeners: MutableSet<String> = mutableSetOf()
 
     open fun init() {
@@ -57,7 +60,7 @@ open class Channel(
     }
 
     open fun registerCommand() {
-        if (bindings.command.isNullOrEmpty()) return
+        if (bindings.command.isNullOrEmpty() || TrChatBukkit.isActivated) return
         command(
             name = bindings.command[0],
             aliases = subList(bindings.command, 1),
@@ -66,18 +69,19 @@ open class Channel(
             permissionDefault = PermissionDefault.TRUE
         ) {
             execute<Player> { sender, _, _ ->
-                if (sender.session.channel == this@Channel.id) {
+                if (sender.session.channel == id) {
                     quit(sender, setDefault = true)
                 } else {
-                    join(sender, this@Channel)
+                    join(sender, id)
                 }
             }
             dynamic("message", optional = true) {
                 execute<CommandSender> { sender, _, argument ->
+                    val channel = channels[id] ?: return@execute
                     if (sender is Player) {
-                        execute(sender, argument)
+                        channel.execute(sender, argument)
                     } else {
-                        execute(sender, argument)
+                        channel.execute(sender, argument)
                     }
                 }
             }
@@ -100,6 +104,7 @@ open class Channel(
     }
 
     open fun execute(sender: CommandSender, message: String): ChannelExecuteResult {
+        Function.clearMentioned()
         if (sender is Player) {
             return execute(sender, message)
         }
@@ -133,6 +138,7 @@ open class Channel(
     }
 
     open fun execute(player: Player, message: ComponentText, toConsole: Boolean = true): ChannelExecuteResult {
+        Function.clearMentioned()
         var plain = message.toPlainText()
         if (!checkLimits(player, plain)) {
             return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.LIMITED)
@@ -140,6 +146,7 @@ open class Channel(
         val session = player.session
         session.lastChannel = this
         session.lastPublicMessage = plain
+        session.similarPeriodMessages.add(System.currentTimeMillis() to plain)
         val event = TrChatEvent(this, session, message)
         if (!event.call()) {
             return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.EVENT)
@@ -150,7 +157,8 @@ open class Channel(
         ChatLogs.logNormal(player.name, plain)
         Metrics.increase(0)
 
-        val component = Components.empty()
+        var component = Components.empty()
+        var mentioned = emptySet<String>()
         formats.firstOrNull { it.condition.pass(player) }?.let { format ->
             format.prefix
                 .mapNotNull { prefix -> prefix.value.firstOrNull { it.condition.pass(player) }?.content?.toTextComponent(player) }
@@ -158,6 +166,7 @@ open class Channel(
             format.msg.firstOrNull { it.condition.pass(player) }
                 ?.let { component.append((it.content as MsgComponent).createComponent(player, msg, settings.disabledFunctions)) }
                 ?: return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.NO_FORMAT)
+            mentioned = Function.takeMentioned()
             format.suffix
                 .mapNotNull { suffix -> suffix.value.firstOrNull { it.condition.pass(player) }?.content?.toTextComponent(player) }
                 .forEach { suffix -> component.append(suffix) }
@@ -166,6 +175,25 @@ open class Channel(
             session.cancelChat = false
             return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.EVENT)
         }
+        val sendEvent = TrChatSendEvent(this, session, component)
+        if (!sendEvent.call()) {
+            return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.EVENT)
+        }
+        component = sendEvent.component
+
+        if (player.data.isShadowMuted) {
+            if (events.send(player, player.name, plain)) {
+                player.sendComponent(player, component)
+                if (player.name in mentioned) {
+                    BukkitProxyManager.sendProxyLang(player, player.name, "Function-Mention-Notify", player.name)
+                }
+            }
+            if (toConsole) {
+                console().sendComponent(player, component)
+            }
+            return ChannelExecuteResult(failedReason = ChannelExecuteResult.FailReason.LIMITED)
+        }
+
         // Proxy
         if (settings.proxy) {
             if (BukkitProxyManager.processor != null || settings.forceProxy) {
@@ -175,7 +203,9 @@ open class Channel(
                     component,
                     settings.listenPermission,
                     settings.doubleTransfer,
-                    settings.ports
+                    settings.ports,
+                    senderName = player.name,
+                    mentioned = mentioned.joinToString(",")
                 )
                 return ChannelExecuteResult.success(component)
             }
@@ -183,28 +213,35 @@ open class Channel(
         // Local
         when (settings.range.type) {
             ChannelRange.Type.ALL -> {
-                listeners.filter { events.send(player, it, plain) }.forEach {
+                val receivers = listeners.filter { events.send(player, it, plain) }
+                receivers.forEach {
                     getProxyPlayer(it)?.sendComponent(player, component)
                 }
+                notifyMentioned(player, receivers, mentioned)
             }
             ChannelRange.Type.SINGLE_WORLD -> {
-                onlinePlayers.filter { it.name in listeners
+                val receivers = onlinePlayers.filter { it.name in listeners
                         && it.world == player.world
-                        && events.send(player, it.name, plain) }.forEach {
+                        && events.send(player, it.name, plain) }
+                receivers.forEach {
                     it.sendComponent(player, component)
                 }
+                notifyMentioned(player, receivers.map { it.name }, mentioned)
             }
             ChannelRange.Type.DISTANCE -> {
-                onlinePlayers.filter { it.name in listeners
+                val receivers = onlinePlayers.filter { it.name in listeners
                         && it.world == player.world
                         && it.location.distance(player.location) <= settings.range.distance
-                        && events.send(player, it.name, plain) }.forEach {
+                        && events.send(player, it.name, plain) }
+                receivers.forEach {
                     it.sendComponent(player, component)
                 }
+                notifyMentioned(player, receivers.map { it.name }, mentioned)
             }
             ChannelRange.Type.SELF -> {
                 if (events.send(player, player.name, plain)) {
                     player.sendComponent(player, component)
+                    notifyMentioned(player, listOf(player.name), mentioned)
                 }
             }
         }
@@ -212,6 +249,14 @@ open class Channel(
             console().sendComponent(player, component)
         }
         return ChannelExecuteResult.success(component)
+    }
+
+    /** 只有真正收到（能看到）该消息且被 @ 的玩家才会收到提示 */
+    protected fun notifyMentioned(sender: Player, receivers: Collection<String>, mentioned: Set<String>) {
+        if (mentioned.isEmpty()) return
+        receivers.filter { it in mentioned }.forEach {
+            BukkitProxyManager.sendProxyLang(sender, it, "Function-Mention-Notify", sender.name)
+        }
     }
 
     open fun checkLimits(player: Player, message: String): Boolean {
@@ -236,10 +281,38 @@ open class Channel(
             }
         }
         if (!player.hasPermission("trchat.bypass.repeat")) {
-            val lastMessage = player.session.lastPublicMessage
-            if (Settings.chatSimilarity > 0 && Strings.similarDegree(lastMessage, message) > Settings.chatSimilarity) {
-                player.sendLang("General-Too-Similar")
-                return false
+            val session = player.session
+            if (Settings.chatSimilarity > 0 && Settings.chatSimilarity <= 1) {
+                val period = Settings.chatSimilarityPeriod.get().takeIf { it > 0 } ?: 60000L
+                val now = System.currentTimeMillis()
+                session.similarPeriodMessages.removeAll { now - it.first > period }
+                // 是否检测周期内所有消息的相似度：true 检测周期内所有消息（更严格）；false 只检测相邻两条消息
+                val similar = if (Settings.chatSimilarityCompareAll) {
+                    session.similarPeriodMessages.any { Strings.similarDegree(it.second, message) >= Settings.chatSimilarity }
+                } else {
+                    Strings.similarDegree(session.lastPublicMessage, message) >= Settings.chatSimilarity
+                }
+                if (similar) {
+                    if (session.similarPeriodStart == 0L || now - session.similarPeriodStart >= period) {
+                        session.similarPeriodStart = now
+                        session.similarCountInPeriod = 0
+                    }
+                    if (session.similarCountInPeriod >= Settings.chatSimilarityMaxPerPeriod) {
+                        player.sendLang("General-Too-Similar")
+                        return false
+                    }
+                    session.similarCountInPeriod++
+                }
+            }
+        }
+        if (!player.hasPermission("trchat.bypass.duplicate")) {
+            val maxRepeat = Settings.chatDuplicatePhraseMaxRepeat
+            if (maxRepeat > 0 && message.length >= 2) {
+                val whitelist = Settings.chatDuplicatePhraseWhitelist.toSet()
+                if (maxConsecutiveRepeat(message, whitelist) > maxRepeat) {
+                    player.sendLang("General-Too-Duplicate")
+                    return false
+                }
             }
         }
         if (!player.hasPermission("trchat.bypass.chatcd")) {
@@ -252,12 +325,30 @@ open class Channel(
         if (Function.functions.any { !it.checkCooldown(player, message) }) {
             return false
         }
+        // 消息发送频率检查
+        if (!player.hasPermission("trchat.bypass.highfrequency")) {
+            val max = Settings.chatHighFrequencyMaxPerPeriod
+            if (max > 0) {
+                val session = player.session
+                val period = Settings.chatHighFrequencyPeriod.get().takeIf { it > 0 } ?: 60000L
+                val now = System.currentTimeMillis()
+                if (session.totalPeriodStart == 0L || now - session.totalPeriodStart >= period) {
+                    session.totalPeriodStart = now
+                    session.totalCountInPeriod = 0
+                }
+                if (session.totalCountInPeriod >= max) {
+                    player.sendLang("General-Too-Frequent")
+                    return false
+                }
+                session.totalCountInPeriod++
+            }
+        }
         player.updateCooldown(CooldownType.CHAT, Settings.chatCooldown.get())
         return true
     }
 
     open fun unregister() {
-        bindings.command?.forEach { unregisterCommand(it) }
+        isUnregistered = true
         listeners.clear()
     }
 
@@ -303,4 +394,60 @@ open class Channel(
             }
         }
     }
+}
+
+// 检查重复的子字符串并统计
+private fun maxConsecutiveRepeat(message: String, whitelist: Set<String>): Int {
+    val n = message.length
+    if (n < 2) return 1
+    var max = 1
+    val checkWhitelist = whitelist.isNotEmpty()
+    var i = 0
+    while (i < n) {
+        // 剪枝①：剩余字符数不足超过当前最大值，后续起点不可能更大
+        if (n - i <= max) break
+
+        val maxLen = (n - i) / 2
+        var len = 1
+        while (len <= maxLen) {
+            // 剪枝②：当前长度下理论最大重复次数不超过 max，后续长度更不可能
+            val maxPossible = (n - i) / len
+            if (maxPossible <= max) break
+
+            if (checkWhitelist && isWhitelistedUnit(message, i, len, whitelist)) {
+                len++
+                continue
+            }
+            var count = 1
+            var j = i + len
+            while (j + len <= n && message.regionMatches(j, message, j - len, len)) {
+                count++
+                j += len
+            }
+            if (count > max) max = count
+            len++
+        }
+        i++
+    }
+    return max
+}
+
+// 判断重复单元是否被白名单豁免
+private fun isWhitelistedUnit(message: String, start: Int, len: Int, whitelist: Set<String>): Boolean {
+    for (w in whitelist) {
+        val wl = w.length
+        if (wl == 0 || len < wl || len % wl != 0) continue
+        val repeat = len / wl
+        var ok = true
+        var k = 0
+        while (k < repeat) {
+            if (!message.regionMatches(start + k * wl, w, 0, wl)) {
+                ok = false
+                break
+            }
+            k++
+        }
+        if (ok) return true
+    }
+    return false
 }

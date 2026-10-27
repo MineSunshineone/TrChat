@@ -7,7 +7,7 @@ interface ProxyMessageManager {
 
     val executor: ExecutorService
 
-    val allNames: MutableMap<Int, Map<String, String?>>
+    val allNames: MutableMap<Int, List<Triple<String, String, String>>>
 
     fun sendMessage(recipient: Any, vararg args: String): Future<*>
 

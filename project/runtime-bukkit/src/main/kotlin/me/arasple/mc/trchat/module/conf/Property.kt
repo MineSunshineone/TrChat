@@ -20,7 +20,7 @@ enum class Property(val regex: Regex, val group: Int) {
 
         fun from(string: String): Pair<String, Map<Property, String>> {
             var content = string
-            val map = values().mapNotNull {
+            val map = entries.mapNotNull {
                 val value = it.regex.find(content)?.groupValues?.get(it.group)
                 value?.let { v ->
                     content = content.replace(it.regex, "")
@@ -34,6 +34,7 @@ enum class Property(val regex: Regex, val group: Int) {
         fun serialize(contents: Any): List<Pair<String, Map<Property, String>>> {
             return when (contents) {
                 is String -> listOf(from(contents))
+                is Boolean -> listOf(from(contents.toString()))
                 is List<*> -> contents.map { from(it!!.toString()) }
                 else -> error("Unexpected part: $contents")
             }

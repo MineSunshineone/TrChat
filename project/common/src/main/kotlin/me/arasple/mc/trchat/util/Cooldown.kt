@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object Cooldowns {
 
-    private val COOLDOWNS = ConcurrentHashMap<UUID, Cooldown>()
+    val COOLDOWNS = ConcurrentHashMap<UUID, Cooldown>()
 
     fun getCooldownLeft(uuid: UUID, type: String): Long {
         return COOLDOWNS.computeIfAbsent(uuid) { Cooldown() }.data.getOrDefault(type, 0L) - System.currentTimeMillis()
@@ -34,6 +34,5 @@ enum class CooldownType(val alias: String) {
     MENTION_ALL("MentionAll"),
     INVENTORY_SHOW("InventoryShow"),
     ENDERCHEST_SHOW("EnderChestShow"),
-    IMAGE_SHOW("ImageShow")
 
 }

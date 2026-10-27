@@ -12,6 +12,7 @@ import me.arasple.mc.trchat.module.display.format.Format
 import me.arasple.mc.trchat.module.display.format.Group
 import me.arasple.mc.trchat.module.display.format.JsonComponent
 import me.arasple.mc.trchat.module.display.format.MsgComponent
+import me.arasple.mc.trchat.module.display.format.obj.Head
 import me.arasple.mc.trchat.module.display.format.obj.Style
 import me.arasple.mc.trchat.module.display.format.obj.Text
 import me.arasple.mc.trchat.module.display.function.CustomFunction
@@ -25,12 +26,14 @@ import taboolib.common.io.newFile
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.ProxyCommandSender
+import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getDataFolder
 import taboolib.common.platform.function.releaseResourceFile
 import taboolib.common.util.asList
 import taboolib.common.util.orNull
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.Coerce
+import taboolib.common5.util.parseMillis
 import taboolib.library.configuration.ConfigurationSection
 import taboolib.module.configuration.util.getMap
 import taboolib.module.lang.sendLang
@@ -196,10 +199,14 @@ object Loader {
             val priority = map.getInt("priority", 100)
             val regex = map.getString("pattern")!!.toRegex()
             val filterTextRegex = map.getString("text-filter")?.toRegex()
+            val cooldown = kotlin.runCatching { map.getString("cooldown")?.parseMillis() }
+                .onFailure { console().sendLang("Mute-Wrong-Format", map.getString("cooldown")!!) }
+                .getOrNull()
+            val cooldownMessage = map.getString("cooldown-message")
             val displayJson = parseJSON(map.getConfigurationSection("display")!!.toMap(), isMsg = false)
             val reaction = map["action"]?.let { Reaction(it.asList()) }
 
-            CustomFunction(id, condition, priority, regex, filterTextRegex, displayJson, reaction)
+            CustomFunction(id, condition, priority, regex, filterTextRegex, cooldown, cooldownMessage, displayJson, reaction)
         }.sortedBy { it.priority }
 
         Function.reload(functions)
@@ -237,12 +244,18 @@ object Loader {
         style += content["file"]?.serialize()?.map { it.first to it.second.getCondition() }?.let { Style.Click.File(it) }
         style += content["insertion"]?.serialize()?.map { it.first to it.second.getCondition() }?.let { Style.Insertion(it) }
         style += content["font"]?.serialize()?.map { it.first to it.second.getCondition() }?.let { Style.Font(it) }
+        style += content["shadow"]?.serialize()?.map { it.first to it.second.getCondition() }?.let { Style.Shadow(it) }
         return if (isMsg) {
             val defaultColor = content["default-color"]!!.serialize().map { CustomColor.get(it.first) to it.second.getCondition() }
-            MsgComponent(defaultColor, style.filterNotNull())
+
+            val specialCharsNode = content["special-char"] as? Map<*, *>
+            val specialCharsEnabled = ((specialCharsNode?.get("enabled") as? Boolean) ?: false) || ((specialCharsNode?.get("Enabled") as? Boolean) ?: false)
+            val specialCharsColor = (specialCharsNode?.get("special-char-color") as? String) ?: "&f"
+            MsgComponent(defaultColor, style.filterNotNull(), specialCharsEnabled, specialCharsColor)
         } else {
-            val text = Property.serialize(content["text"] ?: "null").map { Text(it.first, it.second.getCondition()) }
-            JsonComponent(text, style.filterNotNull())
+            val text = content["text"]?.serialize()?.map { Text(it.first, it.second.getCondition()) } ?: emptyList()
+            val head = content["head"]?.serialize()?.map { Head(it.first, it.second.getCondition()) } ?: emptyList()
+            JsonComponent(text, head, style.filterNotNull())
         }
     }
 

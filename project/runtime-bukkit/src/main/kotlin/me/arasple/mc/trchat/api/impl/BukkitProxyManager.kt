@@ -4,12 +4,12 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder
 import me.arasple.mc.trchat.api.ClientMessageManager
 import me.arasple.mc.trchat.api.ProxyMode
 import me.arasple.mc.trchat.module.conf.file.Settings
-import me.arasple.mc.trchat.module.internal.data.PlayerData
+import me.arasple.mc.trchat.module.internal.hook.isVanished
 import me.arasple.mc.trchat.module.internal.proxy.BukkitProxyProcessor
 import me.arasple.mc.trchat.module.internal.proxy.redis.RedisManager
 import me.arasple.mc.trchat.util.parseString
+import net.md_5.bungee.api.ChatColor
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.plugin.messaging.PluginMessageRecipient
 import org.spigotmc.SpigotConfig
 import taboolib.common.platform.Platform
@@ -17,6 +17,7 @@ import taboolib.common.platform.PlatformFactory
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getProxyPlayer
+import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.unsafeLazy
 import taboolib.common5.cint
 import taboolib.module.chat.ComponentText
@@ -39,15 +40,15 @@ object BukkitProxyManager : ClientMessageManager {
 
     override var port = 25565
 
-    var allPlayerNames = mapOf<String, String?>()
-        get() = if (mode == ProxyMode.NONE) {
-            onlinePlayers.associate { it.name to ChatColor.stripColor(it.displayName) }
-        } else if (mode == ProxyMode.REDIS) {
-            val result = mutableMapOf<String, String?>()
-            (processor as BukkitProxyProcessor.RedisSide).allNames.values.forEach { result += it }
-            result
-        } else {
-            field
+    // 这里不需要用 Set, 后面会转换为 Map
+    var allPlayerNames = listOf<Triple<String, String?, UUID>>()
+        get() = when (mode) {
+            ProxyMode.NONE -> {
+                onlinePlayers.map { Triple(it.name, ChatColor.stripColor(it.displayName), it.uniqueId) }
+            }
+            else -> {
+                field + onlinePlayers.map { Triple(it.name, ChatColor.stripColor(it.displayName), it.uniqueId) }
+            }
         }
 
     init {
@@ -65,11 +66,12 @@ object BukkitProxyManager : ClientMessageManager {
     }
 
     override val mode: ProxyMode by unsafeLazy {
-        val force = kotlin.runCatching {
-            ProxyMode.valueOf(Settings.conf.getString("Options.Proxy")?.uppercase() ?: "AUTO")
-        }
-        if (force.isSuccess) {
-            return@unsafeLazy force.getOrThrow()
+        val force = Settings.conf.getString("Options.Proxy")?.uppercase() ?: "AUTO"
+        if (force != "AUTO") {
+            try {
+                return@unsafeLazy ProxyMode.valueOf(force)
+            } catch (_: IllegalArgumentException) {
+            }
         }
         if (RedisManager.enabled) {
             console().sendLang("Plugin-Proxy-Supported", "Redis")
@@ -100,6 +102,9 @@ object BukkitProxyManager : ClientMessageManager {
             }
             ProxyMode.REDIS -> {
                 RedisManager()
+                submitAsync(period = 200L) {
+                    updateNames()
+                }
                 BukkitProxyProcessor.RedisSide()
             }
             else -> null
@@ -111,12 +116,16 @@ object BukkitProxyManager : ClientMessageManager {
         executor.shutdownNow()
     }
 
-    override fun getPlayerNames(): Map<String, String?> {
-        return allPlayerNames
+    override fun getPlayerNames(includeVanish: Boolean): Map<String, String?> {
+        return if (includeVanish) {
+            allPlayerNames.associate { it.first to it.second }
+        } else {
+            allPlayerNames.filterNot { it.third.isVanished() }.associate { it.first to it.second }
+        }
     }
 
-    fun getPlayerNamesMerged(): Set<String> {
-        return allPlayerNames.let { it.keys + it.values.filterNotNull() }
+    fun getPlayerNamesMerged(includeVanish: Boolean = false): Set<String> {
+        return getPlayerNames(includeVanish).let { it.keys + it.values.filterNotNull() }
     }
 
     override fun getExactName(name: String): String? {
@@ -142,6 +151,8 @@ object BukkitProxyManager : ClientMessageManager {
         return processor!!.sendMessage(recipient, executor, data)
     }
 
+
+
     fun sendProxyLang(recipient: Any?, target: String, node: String, vararg args: String) {
         if (processor == null || Bukkit.getPlayerExact(target) != null) {
             getProxyPlayer(target)?.sendLang(node, *args)
@@ -150,26 +161,41 @@ object BukkitProxyManager : ClientMessageManager {
         }
     }
 
-    fun sendBroadcastRaw(recipient: Any?, uuid: UUID, component: ComponentText, listenPerm: String = "", doubleTransfer: Boolean = true, ports: List<Int> = emptyList()) {
+    fun sendBroadcastRaw(
+        recipient: Any?,
+        uuid: UUID,
+        component: ComponentText,
+        listenPerm: String = "",
+        doubleTransfer: Boolean = true,
+        ports: List<Int> = emptyList(),
+        fallback: String = component.toLegacyText(),
+        senderName: String = "",
+        mentioned: String = ""
+    ) {
         sendMessage(recipient, arrayOf(
             "BroadcastRaw",
             uuid.parseString(),
             component.toRawMessage(),
             listenPerm,
             doubleTransfer.toString(),
-            ports.joinToString(";"))
+            ports.joinToString(";"),
+            fallback,
+            senderName,
+            mentioned)
         )
     }
 
-    fun sendPrivateRaw(recipient: Any?, to: String, from: String, component: ComponentText) {
-        sendMessage(recipient, arrayOf("ForwardMessage", "SendPrivateRaw", to, from, component.toRawMessage()))
+    fun sendPrivateRaw(recipient: Any?, to: String, from: String, component: ComponentText, msgComponent: ComponentText? = null, fallback: String = component.toLegacyText()) {
+        sendMessage(recipient, arrayOf("ForwardMessage", "SendPrivateRaw", to, from, component.toRawMessage(), fallback, msgComponent?.toRawMessage() ?: ""))
     }
 
     fun updateNames() {
-        sendMessage(onlinePlayers.firstOrNull(), arrayOf(
+        sendMessage(onlinePlayers.lastOrNull(), arrayOf(
             "UpdateNames",
-            onlinePlayers.filter { it.name !in PlayerData.vanishing }.joinToString(",") { it.name + "-" + ChatColor.stripColor(it.displayName) },
-            port.toString()
+            port.toString(),
+            onlinePlayers.joinToString(",") { it.name },
+            onlinePlayers.joinToString(",") { ChatColor.stripColor(it.displayName)?.ifEmpty { "#" } ?: "#" },
+            onlinePlayers.joinToString(",") { it.uniqueId.parseString() }
         ))
     }
 

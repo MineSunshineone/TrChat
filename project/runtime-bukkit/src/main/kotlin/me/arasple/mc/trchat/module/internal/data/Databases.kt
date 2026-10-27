@@ -8,13 +8,13 @@ import taboolib.common.platform.Awake
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.function.disablePlugin
+import taboolib.expansion.Database
 import taboolib.expansion.playerDatabase
 import taboolib.expansion.setupPlayerDatabase
+import taboolib.module.database.HostPostgreSQL
 
-/**
- * @author ItsFlicker
- * @since 2021/9/11 13:29
- */
+//lateinit var globalPDC: DataContainer
+
 @PlatformSide(Platform.BUKKIT)
 object Databases {
 
@@ -27,12 +27,19 @@ object Databases {
                     Settings.conf.getConfigurationSection("Database.SQL")!!,
                     Settings.conf.getString("Database.SQL.table")!! + "_v2"
                 )
+                "POSTGRESQL", "POSTGRES" -> playerDatabase = Database(
+                    TypePostgreSQL(
+                        HostPostgreSQL(Settings.conf.getConfigurationSection("Database.SQL")!!),
+                        Settings.conf.getString("Database.SQL.table")!! + "_v2"
+                    )
+                )
                 else -> {
                     val event = CustomDatabaseEvent(type)
                     event.call()
                     playerDatabase = event.database ?: error("Unsupported database type: $type")
                 }
             }
+//            globalPDC = DataContainer(".", playerDatabase!!)
         } catch (t: Throwable) {
             t.print("Failed to load database! Plugin will be disabled.")
             disablePlugin()

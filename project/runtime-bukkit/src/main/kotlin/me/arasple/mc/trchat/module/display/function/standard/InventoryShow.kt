@@ -7,10 +7,7 @@ import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.function.Function
 import me.arasple.mc.trchat.module.display.function.StandardFunction
 import me.arasple.mc.trchat.module.internal.script.Reaction
-import me.arasple.mc.trchat.util.CooldownType
-import me.arasple.mc.trchat.util.getCooldownLeft
-import me.arasple.mc.trchat.util.passPermission
-import me.arasple.mc.trchat.util.updateCooldown
+import me.arasple.mc.trchat.util.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
@@ -56,6 +53,10 @@ object InventoryShow : Function("INVENTORY") {
     @ConfigNode("General.Inventory-Show.Keys", "function.yml")
     var keys = listOf<String>()
 
+    val keysRegex by resettableLazy("functions") {
+        keys.map { Regex(Regex.escape(it), RegexOption.IGNORE_CASE) }
+    }
+
     val cache: Cache<String, Inventory> = CacheBuilder.newBuilder()
         .maximumSize(10)
         .build()
@@ -69,8 +70,8 @@ object InventoryShow : Function("INVENTORY") {
             return message
         }
         var result = message
-        keys.forEach {
-            result = result.replaceFirst(it, "{{INVENTORY:${sender.name}}}", ignoreCase = true)
+        keysRegex.forEach {
+            result = result.replace(it) { "{{INVENTORY:${push(sender.name)}}}" }
         }
         return result
     }
@@ -121,7 +122,7 @@ object InventoryShow : Function("INVENTORY") {
                         (0..8).map { inventory.getItem(it).replaceAir() }
             }
             onGenerate { _, element, _, _ -> element }
-            onBuild { _, inv ->
+            onInventoryCreate { inv ->
                 inv.setItem(0, PLACEHOLDER_ITEM)
                 inv.setItem(1, inventory.runCatching { itemInOffHand }.getOrDefault(AIR_ITEM).replaceAir())
                 inv.setItem(2, buildItem(XMaterial.PLAYER_HEAD) {
@@ -130,10 +131,11 @@ object InventoryShow : Function("INVENTORY") {
                 })
                 inv.setItem(3, inventory.itemInHand.replaceAir())
                 inv.setItem(4, PLACEHOLDER_ITEM)
-                inv.setItem(5, inventory.getItem(inventory.size - 2).replaceAir())
-                inv.setItem(6, inventory.getItem(inventory.size - 3).replaceAir())
-                inv.setItem(7, inventory.getItem(inventory.size - 4).replaceAir())
-                inv.setItem(8, inventory.getItem(inventory.size - 5).replaceAir())
+                val armor = inventory.armorContents
+                inv.setItem(5, armor[3].replaceAir()) // 头盔
+                inv.setItem(6, armor[2].replaceAir()) // 胸甲
+                inv.setItem(7, armor[1].replaceAir()) // 护腿
+                inv.setItem(8, armor[0].replaceAir()) // 靴子
                 (9..17).forEach { slot -> inv.setItem(slot, PLACEHOLDER_ITEM) }
             }
             onClick(lock = true)

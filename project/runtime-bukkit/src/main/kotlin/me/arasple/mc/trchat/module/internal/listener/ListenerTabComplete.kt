@@ -16,6 +16,7 @@ import taboolib.module.configuration.ConfigNode
  */
 @PlatformSide(Platform.BUKKIT)
 object ListenerTabComplete {
+
     @ConfigNode("Options.Prevent-Tab-Complete", "settings.yml")
     var enabled = false
         private set

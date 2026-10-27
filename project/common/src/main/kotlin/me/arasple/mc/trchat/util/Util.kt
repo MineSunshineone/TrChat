@@ -11,6 +11,15 @@ private val reportedErrors = mutableListOf<String>()
 val nilUUID = UUID(0, 0)
 val papiRegex = "(%)(.+?)(%)|(:)(.+?)(:)|(?!\\{\")((\\{)(.+?)(}))".toRegex()
 
+fun hasClass(className: String): Boolean {
+    return try {
+        Class.forName(className)
+        true
+    } catch (_: ClassNotFoundException) {
+        false
+    }
+}
+
 fun Throwable.print(title: String, printStackTrace: Boolean = true) {
     console().sendMessage("§c[TrChat] §7$title")
     console().sendMessage("§7${javaClass.name}: $localizedMessage")

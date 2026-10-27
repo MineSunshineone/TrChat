@@ -42,6 +42,8 @@ Plugin-Failed: '&8[&3Tr&bChat&8] &cOperation failure.'
 
 General-Too-Long: '&8[&3Tr&bChat&8] &7Message is too long. &8[&6{0}&8/&2{1}&8]'
 General-Too-Similar: '&8[&3Tr&bChat&8] &7Please do not repeat your message.'
+General-Too-Frequent: '&8[&3Tr&bChat&8] &7You are sending messages too frequently, please slow down.'
+General-Too-Duplicate: '&8[&3Tr&bChat&8] &7Your message contains consecutively repeated phrases, please do not spam.'
 General-No-Permission: '&8[&3Tr&bChat&8] &7You do not have enough permission to do this.'
 General-Muted: '&8[&3Tr&bChat&8] &cYou have been muted until {0}!Reason: {1}'
 General-Cancel-Muted: '&8[&3Tr&bChat&8] &aYou can speak now.'
@@ -155,6 +157,10 @@ Function-Mention-All-Format:
     args: [ ]
 
 Private-Message-Spy-Format: '&8[&3Spy&8] &6{0} &2-> &3{1}&f: &7{2}'
+Private-Message-Spy-Format-New:
+  - type: json
+    text: '&8\[&3Spy&8\] &6{0} &2-> &3{1}&f: [message]'
+    args: [ ]
 Private-Message-Spy-On:
   - type: actionbar
     text: '&c&l&k|&f &a&lSpy Mode Enabled &c&l&k|'
@@ -224,11 +230,36 @@ Channel-Bad-Language:
     sound: 'ENTITY_ITEM_BREAK'
     volume: 1
     pitch: 0
+Channel-Not-Found: '&8[&3Tr&bChat&8] &7The channel &b{0} &7does not exist.'
+Channel-Join-Other: '&8[&3Tr&bChat&8] &3You have moved &7{0} &3to the &b{1} &3channel.'
+Channel-Quit-Other: '&8[&3Tr&bChat&8] &3You have removed &7{0} &3from the chat channel.'
+Sign-Edit-No-Permission:
+  - type: actionbar
+    text: '&cYou do not have permission to edit the bulletin board.'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
+Book-Edit-No-Permission:
+  - type: actionbar
+    text: '&cYou do not have permission to edit the book.'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
+Anvil-Edit-No-Permission:
+  - type: actionbar
+    text: '&cYou do not have permission to rename items in anvil.'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
 
 Mute-Muted-Player: '&8[&3Tr&bChat&8] &7You muted {0} for {1}.Reason: {2}'
 Mute-Cancel-Muted-Player: '&8[&3Tr&bChat&8] &7You cancelled muting {0}.'
 Mute-Muted-All: '&8[&3Tr&bChat&8] &7Global muted.'
 Mute-Cancel-Muted-All: '&8[&3Tr&bChat&8] &7Global mute canceled.'
+Mute-Wrong-Format: '&8[&3Tr&bChat&8] &7{0} is not a correct time!'
 
 Ignore-Ignored-Player: '&8[&3Tr&bChat&8] &7Ignored &f{0}''s &7messages.'
 Ignore-Cancel-Player: '&8[&3Tr&bChat&8] &7Restore receiving &f{0}''s &7messages.'

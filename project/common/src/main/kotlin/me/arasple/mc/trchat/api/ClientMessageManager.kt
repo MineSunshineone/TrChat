@@ -13,7 +13,7 @@ interface ClientMessageManager {
 
     fun close() = Unit
 
-    fun getPlayerNames(): Map<String, String?>
+    fun getPlayerNames(includeVanish: Boolean = false): Map<String, String?>
 
     fun getExactName(name: String): String?
 

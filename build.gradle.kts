@@ -1,10 +1,11 @@
 import io.izzel.taboolib.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     java
-    id("io.izzel.taboolib") version "2.0.23"
-    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    id("io.izzel.taboolib") version "2.0.38"
+    id("org.jetbrains.kotlin.jvm") version "2.4.10"
 }
 
 subprojects {
@@ -15,6 +16,7 @@ subprojects {
     taboolib {
         env {
             install("basic-configuration")
+            install("incision")
             install(
                 BukkitHook,
                 BukkitNMSUtil,
@@ -24,7 +26,8 @@ subprojects {
             install(
                 "database",
                 "database-alkaid-redis",
-                "database-player"
+                "database-player",
+//                "database-postgresql"
             )
             install(
                 "minecraft-chat",
@@ -35,12 +38,13 @@ subprojects {
             )
             install(JavaScript)
             install(Bukkit, BungeeCord, Velocity)
+            modules.remove("minecraft-chat")
+            disableOnSkippedVersion = false
+//            disableOnUnsupportedVersion = false
         }
         version {
-            taboolib = "6.2.3-5297ae6"
+            taboolib = "6.3.0-4bf7820"
             coroutines = null
-//            isSkipKotlin = true
-//            isSkipKotlinRelocate = true
         }
     }
 
@@ -61,7 +65,7 @@ subprojects {
         compileOnly(kotlin("stdlib"))
         compileOnly("com.google.code.gson:gson:2.8.5")
         compileOnly("com.google.guava:guava:21.0")
-        compileOnly("net.kyori:adventure-api:4.21.0")
+        compileOnly("net.kyori:adventure-api:4.26.1")
     }
 
     // 编译配置
@@ -74,9 +78,9 @@ subprojects {
         options.encoding = "UTF-8"
     }
     tasks.withType<KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = "1.8"
-            freeCompilerArgs = listOf("-Xjvm-default=all", "-Xextended-compiler-checks")
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+            freeCompilerArgs = listOf("-Xjvm-default=all")
         }
     }
 }

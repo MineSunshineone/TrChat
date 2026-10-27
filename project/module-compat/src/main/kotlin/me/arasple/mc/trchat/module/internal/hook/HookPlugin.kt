@@ -1,15 +1,12 @@
 package me.arasple.mc.trchat.module.internal.hook
 
-import me.arasple.mc.trchat.module.internal.hook.impl.HookDiscordSRV
-import me.arasple.mc.trchat.module.internal.hook.impl.HookEcoEnchants
-import me.arasple.mc.trchat.module.internal.hook.impl.HookItemsAdder
-import me.arasple.mc.trchat.module.internal.hook.impl.HookNova
 import me.arasple.mc.trchat.module.internal.hook.type.HookDisplayItem
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
+import taboolib.common.io.runningClassesWithoutLibrary
 import taboolib.common.platform.Platform
-import taboolib.common.platform.PlatformSide
 import taboolib.common.platform.function.console
+import taboolib.common.platform.function.runningPlatform
 import taboolib.module.lang.sendLang
 import java.util.function.BiFunction
 
@@ -17,15 +14,13 @@ import java.util.function.BiFunction
  * @author Arasple
  * @date 2021/1/26 22:04
  */
-@PlatformSide(Platform.BUKKIT)
 object HookPlugin {
 
-    val registry = arrayListOf(
-        HookDiscordSRV(),
-        HookEcoEnchants(),
-        HookItemsAdder(),
-        HookNova()
-    )
+    val registry = runningClassesWithoutLibrary
+        .filter { it.hasAnnotation(Hook::class.java) }
+        .filter { runningPlatform in it.getAnnotation(Hook::class.java).enumList<Platform>("platforms") }
+        .map { it.newInstance() as HookAbstract }
+        .toMutableList()
 
     fun printInfo() {
         registry.filter { it.isHooked }.forEach {
@@ -49,21 +44,4 @@ object HookPlugin {
             }
         })
     }
-
-    fun getDiscordSRV(): HookDiscordSRV {
-        return registry[0] as HookDiscordSRV
-    }
-
-    fun getEcoEnchants(): HookEcoEnchants {
-        return registry[1] as HookEcoEnchants
-    }
-
-    fun getItemsAdder(): HookItemsAdder {
-        return registry[2] as HookItemsAdder
-    }
-
-    fun getNova(): HookNova {
-        return registry[3] as HookNova
-    }
-
 }

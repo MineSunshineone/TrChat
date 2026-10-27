@@ -36,7 +36,7 @@ object Functions {
     }
 
     @ConfigNode("General.Command-Controller.List", "function.yml")
-    val commandController = ConfigNodeTransfer<List<*>, Map<String, Command>> {
+    val commandController = ConfigNodeTransfer<List<*>, Map<String, Command>>(false, emptyMap()) {
         associate { string ->
             val (cmd, property) = Property.from(string!!.toString())
             val mCmd = Bukkit.getCommandAliases().entries.firstOrNull { (_, value) ->

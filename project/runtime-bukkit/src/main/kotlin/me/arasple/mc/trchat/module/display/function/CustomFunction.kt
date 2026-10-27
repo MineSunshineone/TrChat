@@ -3,8 +3,13 @@ package me.arasple.mc.trchat.module.display.function
 import me.arasple.mc.trchat.module.display.format.JsonComponent
 import me.arasple.mc.trchat.module.internal.script.Condition
 import me.arasple.mc.trchat.module.internal.script.Reaction
+import me.arasple.mc.trchat.util.getCooldownLeft
+import me.arasple.mc.trchat.util.isInCooldown
 import me.arasple.mc.trchat.util.pass
+import me.arasple.mc.trchat.util.updateCooldown
 import org.bukkit.entity.Player
+import taboolib.common.platform.function.adaptPlayer
+import taboolib.common.util.replaceWithOrder
 import taboolib.module.chat.ComponentText
 
 /**
@@ -17,23 +22,40 @@ class CustomFunction(
     val priority: Int,
     val regex: Regex,
     val filterTextRegex: Regex?,
+    val cooldownMillis: Long?,
+    val cooldownMessage: String?,
     val displayJson: JsonComponent,
     override val reaction: Reaction?
 ) : Function(id) {
 
     override fun createVariable(sender: Player, message: String): String {
-        return message.replaceRegex(regex, filterTextRegex) { "{{$id:$it}}" }
+        return message.replaceRegex(regex, filterTextRegex) { "{{$id:${push(it)}}}" }
     }
 
     override fun parseVariable(sender: Player, arg: String): ComponentText {
+        if (cooldownMessage == null && cooldownMillis != null && !sender.hasPermission("trchat.bypass.customcd")) {
+            sender.updateCooldown(id, cooldownMillis)
+        }
         return displayJson.toTextComponent(sender, arg)
     }
 
     override fun canUse(sender: Player): Boolean {
-        return condition.pass(sender)
+        return condition.pass(sender) && (cooldownMillis == null || !sender.isInCooldown(id))
     }
 
     override fun checkCooldown(sender: Player, message: String): Boolean {
+        if (cooldownMessage == null || cooldownMillis == null) {
+            return true
+        }
+        if (message.contains(regex) && !sender.hasPermission("trchat.bypass.customcd")) {
+            val cooldown = sender.getCooldownLeft(id)
+            if (cooldown > 0) {
+                adaptPlayer(sender).sendActionBar(cooldownMessage.replaceWithOrder(cooldown / 1000))
+                return false
+            } else {
+                sender.updateCooldown(id, cooldownMillis)
+            }
+        }
         return true
     }
 

@@ -1,7 +1,8 @@
 dependencies {
     compileOnly(project(":project:common"))
-//    compileOnly(project(":project:module-chat"))
-//    compileOnly("ink.ptms.core:v12105:12105:mapped")
+    compileOnly(project(":project:module-chat"))
+//    compileOnly("ink.ptms.core:v12111:12111:mapped")
+//    compileOnly("ink.ptms.core:v12107:12107:mapped")
 //    compileOnly("ink.ptms.core:v12005:12005:mapped")
     compileOnly("ink.ptms.core:v12004:12004:mapped")
     compileOnly("ink.ptms.core:v12002:12002:mapped")

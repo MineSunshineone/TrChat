@@ -13,55 +13,65 @@ object MessageColors {
 
     const val COLOR_PERMISSION_NODE = "trchat.color."
     const val FORCE_CHAT_COLOR_PERMISSION_NODE = "trchat.color.force-defaultcolor."
+    private val STRIP_COLOR_PATTERN = Regex("&[0-9A-FK-ORX]", RegexOption.IGNORE_CASE)
 
     private val specialColors = arrayOf(
         "simple",
         "rainbow",
         "gradients",
         "hex",
+        "legacy",
+        "chat",
         "anvil",
         "sign",
         "book"
     )
 
     @JvmOverloads
-    fun replaceWithPermission(sender: CommandSender, strings: List<String>, type: Type = Type.DEFAULT): List<String> {
+    fun replaceWithPermission(sender: CommandSender, strings: List<String>, type: Type = Type.CHAT): List<String> {
         return strings.map { replaceWithPermission(sender, it, type) }
     }
 
     @JvmOverloads
-    fun replaceWithPermission(sender: CommandSender, s: String, type: Type = Type.DEFAULT): String {
+    fun replaceWithPermission(sender: CommandSender, s: String, type: Type = Type.CHAT): String {
+        return replaceWithPermission(sender, s, listOf(COLOR_PERMISSION_NODE, type.node))
+    }
+
+    private fun replaceWithPermission(sender: CommandSender, s: String, nodes: List<String>): String {
+        if (nodes.any { node -> sender.hasPermission("$node*") }) {
+            return s.colorify()
+        }
         var string = s
 
-        if (type == Type.ANVIL && sender.hasPermission("trchat.color.anvil.*")) {
-            return string.colorify()
-        }
-        if (type == Type.SIGN && sender.hasPermission("trchat.color.sign.*")) {
-            return string.colorify()
-        }
-        if (type == Type.BOOK && sender.hasPermission("trchat.color.book.*")) {
-            return string.colorify()
+        // 2025/7/14 必须清除无权限的颜色，否则会被CustomColor连带处理
+        string = if (nodes.any { node -> sender.hasPermission(node + "rainbow") }) {
+            string.parseRainbow()
+        } else {
+            string.replace(HexUtils.RAINBOW_PATTERN.toRegex(), "")
         }
 
-        if (sender.hasPermission("$COLOR_PERMISSION_NODE*")) {
-            return string.colorify()
+        string = if (nodes.any { node -> sender.hasPermission(node + "gradients") }) {
+            string.parseGradients()
+        } else {
+            string.replace(HexUtils.GRADIENT_PATTERN.toRegex(), "")
         }
 
-        // 2025/6/18 https://github.com/TrPlugins/TrChat/issues/477
-        if (sender.hasPermission(COLOR_PERMISSION_NODE + "rainbow")) {
-            string = string.parseRainbow()
+        nodes.forEach { node ->
+            getColors(sender, node).forEach { color ->
+                string = string.replace(color, CustomColor.get(color).color)
+            }
         }
 
-        if (sender.hasPermission(COLOR_PERMISSION_NODE + "gradients")) {
-            string = string.parseGradients()
-        }
-
-        if (sender.hasPermission(COLOR_PERMISSION_NODE + "hex")) {
+        if (nodes.any { node -> sender.hasPermission(node + "hex") }) {
             string = string.parseHex()
+        } else {
+            HexUtils.HEX_PATTERNS.forEach { string = string.replace(it.toRegex(), "") }
         }
 
-        getColors(sender).forEach { color ->
-            string = string.replace(color, CustomColor.get(color).color)
+        string = if (nodes.any { node -> sender.hasPermission(node + "legacy") }) {
+            string.parseLegacy()
+        } else {
+            string.replace(STRIP_COLOR_PATTERN, "")
         }
 
         return string
@@ -76,19 +86,21 @@ object MessageColors {
             } else {
                 null
             }
-        }.filterNot { it in specialColors }
+        }.filter { it !in specialColors }
     }
 
-    fun getColors(sender: CommandSender): List<String> {
-        return getColorsFromPermissions(sender, COLOR_PERMISSION_NODE)
+    fun getColors(sender: CommandSender, node: String = COLOR_PERMISSION_NODE): List<String> {
+        return getColorsFromPermissions(sender, node)
     }
 
     fun getForceColors(sender: CommandSender): List<String> {
         return getColorsFromPermissions(sender, FORCE_CHAT_COLOR_PERMISSION_NODE)
     }
 
-    enum class Type {
-
-        DEFAULT, ANVIL, SIGN, BOOK
+    enum class Type(val node: String) {
+        CHAT(COLOR_PERMISSION_NODE + "chat."),
+        ANVIL(COLOR_PERMISSION_NODE + "anvil."),
+        SIGN(COLOR_PERMISSION_NODE + "sign."),
+        BOOK(COLOR_PERMISSION_NODE + "book.")
     }
 }

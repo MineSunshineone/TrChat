@@ -1,6 +1,7 @@
 package me.arasple.mc.trchat.module.internal.proxy
 
 import me.arasple.mc.trchat.api.impl.BukkitProxyManager
+import me.arasple.mc.trchat.module.display.channel.PrivateChannel
 import me.arasple.mc.trchat.module.display.function.standard.EnderChestShow
 import me.arasple.mc.trchat.module.display.function.standard.InventoryShow
 import me.arasple.mc.trchat.module.display.function.standard.ItemShow
@@ -20,19 +21,19 @@ import org.bukkit.plugin.messaging.PluginMessageListener
 import org.bukkit.plugin.messaging.PluginMessageRecipient
 import taboolib.common.platform.function.console
 import taboolib.common.platform.function.getProxyPlayer
-import taboolib.common.platform.function.submitAsync
 import taboolib.common.util.subList
 import taboolib.common5.util.decodeBase64
 import taboolib.module.chat.Components
 import taboolib.module.lang.asLangText
 import taboolib.module.lang.sendLang
-import taboolib.module.nms.MinecraftVersion
 import taboolib.module.ui.MenuHolder
 import taboolib.module.ui.type.impl.ChestImpl
 import taboolib.platform.util.bukkitPlugin
 import taboolib.platform.util.deserializeToInventory
 import taboolib.platform.util.onlinePlayers
 import java.io.IOException
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 
@@ -75,35 +76,48 @@ sealed interface BukkitProxyProcessor : PluginMessageListener {
                 val to = data[1]
                 val from = data[2]
                 val raw = data[3]
-                val message = Components.parseRaw(raw)
+                val fallback = data.getOrElse(4) { "" }
+                val message = kotlin.runCatching { Components.parseRaw(raw) }.getOrElse { Components.text(fallback) }
 
                 if (from.isNotEmpty()) {
                     CommandReply.lastMessageFrom[to] = from
                 }
                 getProxyPlayer(to)?.sendComponent(null, message)
+
+                val rawMsgComponent = data.getOrNull(5)?.takeIf { it.isNotEmpty() } ?: return
+                val msgComponent = kotlin.runCatching { Components.parseRaw(rawMsgComponent) }.getOrNull() ?: return
+                PrivateChannel.sendSpy(from, to, msgComponent)
             }
             "BroadcastRaw" -> {
                 val uuid = data[1].toUUID()
                 val raw = data[2]
                 val perm = data[3]
                 val ports = data[5].takeIf { it != "" }?.split(";")?.map { it.toInt() }
-                val message = Components.parseRaw(raw)
+                val fallback = data.getOrElse(6) { "" }
+                val senderName = data.getOrElse(7) { "" }
+                val mentioned = data.getOrElse(8) { "" }.takeIf { it.isNotEmpty() }?.split(",")?.toSet() ?: emptySet()
+                val message = kotlin.runCatching { Components.parseRaw(raw) }.getOrElse { Components.text(fallback) }
 
                 if (ports == null || BukkitProxyManager.port in ports) {
-                    onlinePlayers
-                        .filter { perm == "" || it.hasPermission(perm) }
-                        .forEach { it.sendComponent(uuid, message) }
+                    val receivers = onlinePlayers.filter { perm == "" || it.hasPermission(perm) }
+                    receivers.forEach { it.sendComponent(uuid, message) }
+                    if (mentioned.isNotEmpty() && senderName.isNotEmpty()) {
+                        receivers.filter { it.name in mentioned }.forEach {
+                            getProxyPlayer(it.name)?.sendLang("Function-Mention-Notify", senderName)
+                        }
+                    }
                     if (this is RedisSide) {
                         console().sendComponent(uuid, message)
                     }
                 }
             }
             "UpdateAllNames" -> {
-                BukkitProxyManager.updateNames()
                 val names = data[1].takeIf { it != "" }?.split(",") ?: return
-                BukkitProxyManager.allPlayerNames = data[2].split(",").mapIndexed { index, displayName ->
-                    names[index] to displayName.takeIf { it != "null" }
-                }.toMap()
+                val displayNames = data[2].split(",")
+                val uuids = data[3].split(",")
+                BukkitProxyManager.allPlayerNames = names.mapIndexed { index, name ->
+                    Triple(name, displayNames[index].takeIf { it != "#" }, uuids[index].toUUID())
+                }
             }
             "GlobalMute" -> {
                 when (data[1]) {
@@ -112,35 +126,47 @@ sealed interface BukkitProxyProcessor : PluginMessageListener {
                 }
             }
             "ItemShow" -> {
-                if (data[1] > MinecraftVersion.minecraftVersion) return
+//                if (data[1] > MinecraftVersion.minecraftVersion) return
                 val name = data[2]
                 val sha1 = data[3]
                 if (ItemShow.cacheInventory.getIfPresent(sha1) == null) {
-                    val inventory = data[4].decodeBase64().deserializeToInventory(
-                        createNoClickChest(3, console().asLangText("Function-Item-Show-Title", name))
-                    )
+                    val inventory = try {
+                        data[4].decodeBase64().deserializeToInventory(
+                            createNoClickChest(3, console().asLangText("Function-Item-Show-Title", name))
+                        )
+                    } catch (_: Throwable) {
+                        return
+                    }
                     ItemShow.cacheInventory.put(sha1, inventory)
                 }
             }
             "InventoryShow" -> {
-                if (data[1] > MinecraftVersion.minecraftVersion) return
+//                if (data[1] > MinecraftVersion.minecraftVersion) return
                 val name = data[2]
                 val sha1 = data[3]
                 if (InventoryShow.cache.getIfPresent(sha1) == null) {
-                    val inventory = data[4].decodeBase64().deserializeToInventory(
-                        createNoClickChest(6, console().asLangText("Function-Inventory-Show-Title", name))
-                    )
+                    val inventory = try {
+                        data[4].decodeBase64().deserializeToInventory(
+                            createNoClickChest(6, console().asLangText("Function-Inventory-Show-Title", name))
+                        )
+                    } catch (_: Throwable) {
+                        return
+                    }
                     InventoryShow.cache.put(sha1, inventory)
                 }
             }
             "EnderChestShow" -> {
-                if (data[1] > MinecraftVersion.minecraftVersion) return
+//                if (data[1] > MinecraftVersion.minecraftVersion) return
                 val name = data[2]
                 val sha1 = data[3]
                 if (EnderChestShow.cache.getIfPresent(sha1) == null) {
-                    val inventory = data[4].decodeBase64().deserializeToInventory(
-                        createNoClickChest(3, console().asLangText("Function-EnderChest-Show-Title", name))
-                    )
+                    val inventory = try {
+                        data[4].decodeBase64().deserializeToInventory(
+                            createNoClickChest(3, console().asLangText("Function-EnderChest-Show-Title", name))
+                        )
+                    } catch (_: Throwable) {
+                        return
+                    }
                     EnderChestShow.cache.put(sha1, inventory)
                 }
             }
@@ -230,20 +256,19 @@ sealed interface BukkitProxyProcessor : PluginMessageListener {
 
     object RedisSide : BukkitProxyProcessor {
 
-        val allNames = mutableMapOf<Int, Map<String, String?>>()
-
-        init {
-            submitAsync(period = 200L) {
-                BukkitProxyManager.updateNames()
-            }
-        }
+        val allNames = ConcurrentHashMap<String, List<Triple<String, String?, UUID>>>()
 
         override fun execute(data: Array<String>) {
             when (data[0]) {
                 "UpdateNames" -> {
-                    val port = data[2].toInt()
-                    val names = data[1].takeIf { it != "" }?.split(",")?.map { it.split("-", limit = 2) } ?: return
-                    allNames[port] = names.associate { it[0] to it[1].takeIf { dn -> dn != "null" } }
+                    val port = data[1]
+                    val names = data[2].split(",")
+                    val displayNames = data[3].split(",")
+                    val uuids = data[4].split(",")
+                    allNames[port] = names.mapIndexed { index, name ->
+                        Triple(name, displayNames[index].takeIf { it != "#" }, uuids[index].toUUID())
+                    }
+                    BukkitProxyManager.allPlayerNames = allNames.values.flatten()
                 }
                 else -> super.execute(data)
             }

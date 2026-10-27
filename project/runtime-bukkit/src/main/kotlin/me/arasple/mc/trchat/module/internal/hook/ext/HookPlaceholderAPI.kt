@@ -2,6 +2,7 @@ package me.arasple.mc.trchat.module.internal.hook.ext
 
 import me.arasple.mc.trchat.api.event.TrChatEvent
 import me.arasple.mc.trchat.module.internal.command.main.CommandMute
+import me.arasple.mc.trchat.module.internal.hook.isVanished
 import me.arasple.mc.trchat.util.PAPIUtil
 import me.arasple.mc.trchat.util.data
 import me.arasple.mc.trchat.util.session
@@ -23,6 +24,8 @@ import taboolib.platform.compat.PlaceholderExpansion
  */
 @PlatformSide(Platform.BUKKIT)
 object HookPlaceholderAPI : PlaceholderExpansion {
+
+    private var checked = false
 
     override val identifier: String
         get() = "trchat"
@@ -48,7 +51,7 @@ object HookPlaceholderAPI : PlaceholderExpansion {
                 "mute" -> data.isMuted
                 "mutetime" -> CommandMute.muteDateFormat.format(data.muteTime)
                 "mutereason" -> data.muteReason
-                "vanish" -> data.isVanishing
+                "vanish" -> player.isVanished()
                 "ignore" -> data.hasIgnored(Bukkit.getOfflinePlayer(params[1]).uniqueId)
                 else -> "out of case"
             }.toString()
@@ -58,7 +61,10 @@ object HookPlaceholderAPI : PlaceholderExpansion {
 
     @SubscribeEvent(priority = EventPriority.LOW)
     fun onChat(e: TrChatEvent) {
-        if (e.forward && !PAPIUtil.checkExpansions(e.session.player)) {
+        if (checked) return
+        if (PAPIUtil.checkExpansions(e.session.player)) {
+            checked = true
+        } else {
             e.isCancelled = true
         }
     }

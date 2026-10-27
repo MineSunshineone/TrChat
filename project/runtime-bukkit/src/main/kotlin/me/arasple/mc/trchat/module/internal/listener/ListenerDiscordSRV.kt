@@ -4,9 +4,10 @@ import github.scarsz.discordsrv.api.Subscribe
 import github.scarsz.discordsrv.api.events.DiscordGuildMessagePreBroadcastEvent
 import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent
 import github.scarsz.discordsrv.dependencies.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import me.arasple.mc.trchat.TrChat
+import me.arasple.mc.trchat.api.impl.BukkitComponentManager
 import me.arasple.mc.trchat.module.display.format.MsgComponent
-import me.arasple.mc.trchat.module.internal.hook.HookPlugin
+import me.arasple.mc.trchat.module.display.function.Function
+import me.arasple.mc.trchat.module.internal.hook.hookDiscordSRV
 import me.arasple.mc.trchat.util.pass
 import me.arasple.mc.trchat.util.session
 import org.bukkit.entity.Player
@@ -14,7 +15,7 @@ import taboolib.common.LifeCycle
 import taboolib.common.platform.Awake
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
-import taboolib.common.platform.function.adaptPlayer
+import taboolib.module.chat.Components
 
 class ListenerDiscordSRV {
 
@@ -23,12 +24,14 @@ class ListenerDiscordSRV {
         val player = e.player
         val channel = player.session.lastChannel ?: return
         if (channel.settings.sendToDiscord) {
-            val message = TrChat.api().getFilterManager().filter(e.message, adaptPlayer(player)).filtered
+            val origin = Components.parseRaw(GsonComponentSerializer.gson().serialize(e.messageComponent))
             val component = (channel.formats
                 .firstOrNull { it.condition.pass(player) }?.msg
                 ?.firstOrNull { it.condition.pass(player) }?.content as? MsgComponent)
-                ?.createComponent(player, message, channel.settings.disabledFunctions)
+                ?.createComponent(player, BukkitComponentManager.filterComponent(origin), channel.settings.disabledFunctions)
                 ?: return
+            // Discord 转发渲染不产生游戏内 @ 提示，清空避免污染后续聊天流程
+            Function.clearMentioned()
             e.messageComponent = GsonComponentSerializer.gson().deserialize(component.toRawMessage())
             if (channel.settings.discordChannel.isNotEmpty()) {
                 e.channel = channel.settings.discordChannel
@@ -50,8 +53,8 @@ class ListenerDiscordSRV {
 
         @Awake(LifeCycle.ACTIVE)
         fun register() {
-            if (HookPlugin.getDiscordSRV().isHooked) {
-                HookPlugin.getDiscordSRV().registerListener(ListenerDiscordSRV())
+            if (hookDiscordSRV.isHooked) {
+                hookDiscordSRV.registerListener(ListenerDiscordSRV())
             }
         }
     }

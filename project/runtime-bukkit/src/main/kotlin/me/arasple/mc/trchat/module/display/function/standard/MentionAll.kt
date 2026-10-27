@@ -5,10 +5,7 @@ import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.function.Function
 import me.arasple.mc.trchat.module.display.function.StandardFunction
 import me.arasple.mc.trchat.module.internal.script.Reaction
-import me.arasple.mc.trchat.util.CooldownType
-import me.arasple.mc.trchat.util.getCooldownLeft
-import me.arasple.mc.trchat.util.passPermission
-import me.arasple.mc.trchat.util.updateCooldown
+import me.arasple.mc.trchat.util.*
 import org.bukkit.entity.Player
 import taboolib.common.platform.Platform
 import taboolib.common.platform.PlatformSide
@@ -49,13 +46,17 @@ object MentionAll : Function("MENTIONALL") {
     @ConfigNode("General.Mention-All.Keys", "function.yml")
     var keys = emptyList<String>()
 
+    val keysRegex by resettableLazy("functions") {
+        keys.map { Regex(Regex.escape(it), RegexOption.IGNORE_CASE) }
+    }
+
     override fun createVariable(sender: Player, message: String): String {
         if (!enabled) {
             return message
         }
         var result = message
-        keys.forEach {
-            result = result.replace(it, "{{MENTIONALL:${sender.name}}}")
+        keysRegex.forEach {
+            result = result.replace(it) { "{{MENTIONALL:${push(sender.name)}}}" }
         }
         return result
     }
@@ -63,7 +64,7 @@ object MentionAll : Function("MENTIONALL") {
     override fun parseVariable(sender: Player, arg: String): ComponentText? {
         if (notify) {
             BukkitProxyManager.getPlayerNames().keys.filter { it != arg }.forEach {
-                BukkitProxyManager.sendProxyLang(sender, it, "Function-Mention-Notify", sender.name)
+                recordMention(it)
             }
         }
         return sender.getComponentFromLang("Function-Mention-All-Format", sender.name)

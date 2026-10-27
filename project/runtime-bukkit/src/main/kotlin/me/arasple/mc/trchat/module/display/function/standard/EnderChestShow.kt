@@ -7,10 +7,7 @@ import me.arasple.mc.trchat.module.conf.file.Functions
 import me.arasple.mc.trchat.module.display.function.Function
 import me.arasple.mc.trchat.module.display.function.StandardFunction
 import me.arasple.mc.trchat.module.internal.script.Reaction
-import me.arasple.mc.trchat.util.CooldownType
-import me.arasple.mc.trchat.util.getCooldownLeft
-import me.arasple.mc.trchat.util.passPermission
-import me.arasple.mc.trchat.util.updateCooldown
+import me.arasple.mc.trchat.util.*
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
@@ -56,6 +53,10 @@ object EnderChestShow : Function("ENDERCHEST") {
     @ConfigNode("General.EnderChest-Show.Keys", "function.yml")
     var keys = listOf<String>()
 
+    val keysRegex by resettableLazy("functions") {
+        keys.map { Regex(Regex.escape(it), RegexOption.IGNORE_CASE) }
+    }
+
     val cache: Cache<String, Inventory> = CacheBuilder.newBuilder()
         .maximumSize(10)
         .build()
@@ -67,8 +68,8 @@ object EnderChestShow : Function("ENDERCHEST") {
             return message
         }
         var result = message
-        keys.forEach {
-            result = result.replaceFirst(it, "{{ENDERCHEST:${sender.name}}}", ignoreCase = true)
+        keysRegex.forEach {
+            result = result.replace(it) { "{{ENDERCHEST:${push(sender.name)}}}" }
         }
         return result
     }

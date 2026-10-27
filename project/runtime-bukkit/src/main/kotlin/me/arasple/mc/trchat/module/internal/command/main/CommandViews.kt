@@ -31,7 +31,7 @@ object CommandViews {
                     ItemShow.cacheInventory.getIfPresent(argument)?.let {
                         sender.openInventory(it)
                     } ?: kotlin.run {
-                        sender.sendLang("Function-Inventory-Show-Unavailable")
+                        sender.sendLang("Function-Item-Show-Unavailable")
                     }
                 }
             }

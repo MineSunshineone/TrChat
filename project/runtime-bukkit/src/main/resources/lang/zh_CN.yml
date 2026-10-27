@@ -45,6 +45,8 @@ Plugin-Failed: '&8[&3Tr&bChat&8] &c操作失败.'
 
 General-Too-Long: '&8[&3Tr&bChat&8] &7你的聊天内容过长. &8[&6{0}&8/&2{1}&8]'
 General-Too-Similar: '&8[&3Tr&bChat&8] &7你的两次聊天内容过于相似, 请勿复读.'
+General-Too-Frequent: '&8[&3Tr&bChat&8] &7你发送消息的频率过高, 请稍后再试.'
+General-Too-Duplicate: '&8[&3Tr&bChat&8] &7你发送的内容中存在连续重复的词组, 请勿刷屏.'
 General-No-Permission: '&8[&3Tr&bChat&8] &7你没有足够的权限执行此操作.'
 General-Muted: '&8[&3Tr&bChat&8] &c你被禁言了!解除时间: {0} 原因: {1}'
 General-Cancel-Muted: '&8[&3Tr&bChat&8] &a你的禁言已被解除.'
@@ -158,6 +160,10 @@ Function-EnderChest-Show-Unavailable: '&c&l该末影箱已过期或不存在...'
 Function-EnderChest-Show-Title: '{0}的末影箱'
 
 Private-Message-Spy-Format: '&8[&3监听&8] &6{0} &2-> &3{1}&f: &7{2}'
+Private-Message-Spy-Format-New:
+  - type: json
+    text: '&8\[&3监听&8\] &6{0} &2-> &3{1}&f: [message]'
+    args: [ ]
 Private-Message-Spy-On:
   - type: actionbar
     text: '&c&l&k|&f &a&l开启监听私聊模式 &c&l&k|'
@@ -227,11 +233,36 @@ Channel-Bad-Language:
     sound: 'ENTITY_ITEM_BREAK'
     volume: 1
     pitch: 0
+Channel-Not-Found: '&8[&3Tr&bChat&8] &7频道 &b{0} &7不存在.'
+Channel-Join-Other: '&8[&3Tr&bChat&8] &3你已将 &7{0} &3加入 &b{1} &3频道.'
+Channel-Quit-Other: '&8[&3Tr&bChat&8] &3你已将 &7{0} &3移出聊天频道.'
+Sign-Edit-No-Permission:
+  - type: actionbar
+    text: '&c你没有权限编辑告示牌'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
+Book-Edit-No-Permission:
+  - type: actionbar
+    text: '&c你没有权限编辑书与笔'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
+Anvil-Edit-No-Permission:
+  - type: actionbar
+    text: '&c你没有权限在铁砧中重命名物品。'
+  - type: sound
+    sound: 'ENTITY_ITEM_BREAK'
+    volume: 1
+    pitch: 0
 
 Mute-Muted-Player: '&8[&3Tr&bChat&8] &7你已禁言 {0} {1}.原因: {2}'
 Mute-Cancel-Muted-Player: '&8[&3Tr&bChat&8] &7你已取消禁言 {0}.'
 Mute-Muted-All: '&8[&3Tr&bChat&8] &7全员禁言已开启.'
 Mute-Cancel-Muted-All: '&8[&3Tr&bChat&8] &7全员禁言已关闭.'
+Mute-Wrong-Format: '&8[&3Tr&bChat&8] &7{0} 不是正确的时间!'
 
 Ignore-Ignored-Player: '&8[&3Tr&bChat&8] &7你已屏蔽 &f{0} &7的聊天.'
 Ignore-Cancel-Player: '&8[&3Tr&bChat&8] &7你已取消屏蔽 &f{0} &7的聊天.'

@@ -1,6 +1,7 @@
 package me.arasple.mc.trchat.module.internal.command
 
 import me.arasple.mc.trchat.api.impl.BukkitProxyManager
+import me.arasple.mc.trchat.module.adventure.parseMiniMessage
 import me.arasple.mc.trchat.module.internal.TrChatBukkit
 import me.arasple.mc.trchat.module.internal.command.sub.CommandColor
 import me.arasple.mc.trchat.module.internal.command.sub.CommandRecallMessage
@@ -68,11 +69,37 @@ object CommandHandler {
     val tellsimple = subCommand {
         dynamic("player") {
             suggest {
-                BukkitProxyManager.getPlayerNamesMerged().toList() + "*"
+                BukkitProxyManager.getPlayerNamesMerged(includeVanish = true).toList() + "*"
             }
             dynamic("message") {
-                execute<CommandSender> { sender, ctx, argument ->
+                execute<CommandSender> { _, ctx, argument ->
                     val component = argument.parseSimple()
+                    if (BukkitProxyManager.processor != null) {
+                        val player = ctx["player"]
+                        if (player == "*") {
+                            BukkitProxyManager.sendBroadcastRaw(onlinePlayers.firstOrNull(), nilUUID, component)
+                        } else {
+                            BukkitProxyManager.sendPrivateRaw(onlinePlayers.firstOrNull(), player, "", component)
+                        }
+                    } else {
+                        ctx.players("player").forEach {
+                            component.sendTo(it)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @CommandBody(permission = "trchat.command.tellmini", optional = true)
+    val tellmini = subCommand {
+        dynamic("player") {
+            suggest {
+                BukkitProxyManager.getPlayerNamesMerged(includeVanish = true).toList() + "*"
+            }
+            dynamic("message") {
+                execute<CommandSender> { _, ctx, argument ->
+                    val component = argument.parseMiniMessage()
                     if (BukkitProxyManager.processor != null) {
                         val player = ctx["player"]
                         if (player == "*") {
@@ -95,13 +122,6 @@ object CommandHandler {
         execute<Player> { sender, _, _ ->
             val state = sender.data.switchSpy()
             sender.sendLang(if (state) "Private-Message-Spy-On" else "Private-Message-Spy-Off")
-        }
-    }
-
-    @CommandBody(permission = "trchat.command.vanish", optional = true)
-    val vanish = subCommand {
-        execute<Player> { sender, _, _ ->
-            sender.data.switchVanish()
         }
     }
 
